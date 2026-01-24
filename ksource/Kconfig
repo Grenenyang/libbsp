@@ -1,0 +1,31 @@
+# ksource/Kconfig - 内核态驱动配置（控制是否编译进 KO）
+menu "Kernel-space Drivers Configuration"
+
+config BUILD_KERN_DRIVERS
+    bool "Build kernel-space drivers into hardware_drv.ko"
+    default y
+    help
+        Enable/disable all kernel-space drivers in single KO.
+
+if BUILD_KERN_DRIVERS
+
+config KERN_SWITCH_RTL9071
+    bool "Build RTL9071 switch driver into hardware_drv.ko"
+    default y
+    help
+        Include RTL9071 switch driver in hardware_drv.ko.
+
+config KERN_PHY_JL3XXX
+    bool "Build JL3XXX PHY driver into hardware_drv.ko"
+    default y
+    help
+        Include JL3XXX PHY driver in hardware_drv.ko.
+
+# 新增内核驱动只需添加：
+# config KERN_NEW_DRIVER
+#     bool "Build New Driver into hardware_drv.ko"
+#     default n
+
+endif # BUILD_KERN_DRIVERS
+endmenu
+

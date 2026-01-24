@@ -1,0 +1,325 @@
+/*
+ * SPDX-License-Identifier: LicenseRef-Realtek-Proprietary
+ *
+ * Copyright (c) 2024, Realtek Semiconductor Corp. All rights reserved.
+ *
+ * This software is a confidential and proprietary property of Realtek
+ * Semiconductor Corp. Disclosure, reproduction, redistribution, in
+ * whole or in part, of this work and its derivatives without express
+ * permission is prohibited.
+ *
+ * Realtek Semiconductor Corp. reserves the right to update, modify, or
+ * discontinue this software at any time without notice. This software is
+ * provided "as is" and any express or implied warranties, including, but
+ * not limited to, the implied warranties of merchantability and fitness for
+ * a particular purpose are disclaimed. In no event shall Realtek
+ * Semiconductor Corp. be liable for any direct, indirect, incidental,
+ * special, exemplary, or consequential damages (including, but not limited
+ * to, procurement of substitute goods or services; loss of use, data, or
+ * profits; or business interruption) however caused and on any theory of
+ * liability, whether in contract, strict liability, or tort (including
+ * negligence or otherwise) arising in any way out of the use of this software,
+ * even if advised of the possibility of such damage.
+ */
+
+#ifndef DV1_RTKAS_REG_LIST_FILE_GPIO_H_
+#define DV1_RTKAS_REG_LIST_FILE_GPIO_H_
+
+#ifdef DV1_FILE_GPIO
+/* File: GPIO */
+#define DV1_PAD_MUX_LED_P1                           0x4A640000u
+#define DV1_PAD_MUX_LED_P1_FIELDNUM                  13u
+#define DV1_PAD_MUX_LED_P1_DEFAULTVAL                0x0u
+#define DV1_PAD_MUX_LED_P2                           0x4A640004u
+#define DV1_PAD_MUX_LED_P2_FIELDNUM                  13u
+#define DV1_PAD_MUX_LED_P2_DEFAULTVAL                0x0u
+#define DV1_PAD_MUX_LED_P3                           0x4A640008u
+#define DV1_PAD_MUX_LED_P3_FIELDNUM                  13u
+#define DV1_PAD_MUX_LED_P3_DEFAULTVAL                0x0u
+#define DV1_PAD_MUX_LED_P4                           0x4A64000Cu
+#define DV1_PAD_MUX_LED_P4_FIELDNUM                  13u
+#define DV1_PAD_MUX_LED_P4_DEFAULTVAL                0x0u
+#define DV1_PAD_MUX_LED_P5                           0x4A640010u
+#define DV1_PAD_MUX_LED_P5_FIELDNUM                  13u
+#define DV1_PAD_MUX_LED_P5_DEFAULTVAL                0x0u
+#define DV1_PAD_MUX_LED_P6                           0x4A640014u
+#define DV1_PAD_MUX_LED_P6_FIELDNUM                  13u
+#define DV1_PAD_MUX_LED_P6_DEFAULTVAL                0x0u
+#define DV1_PAD_MUX_LED_FE0                          0x4A640018u
+#define DV1_PAD_MUX_LED_FE0_FIELDNUM                 13u
+#define DV1_PAD_MUX_LED_FE0_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_LED_FE1                          0x4A64001Cu
+#define DV1_PAD_MUX_LED_FE1_FIELDNUM                 13u
+#define DV1_PAD_MUX_LED_FE1_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_GPIOE_0                          0x4A640020u
+#define DV1_PAD_MUX_GPIOE_0_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOE_0_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_XMII_0_GPIOE_1                   0x4A640024u
+#define DV1_PAD_MUX_XMII_0_GPIOE_1_FIELDNUM          13u
+#define DV1_PAD_MUX_XMII_0_GPIOE_1_DEFAULTVAL        0x0u
+#define DV1_PAD_MUX_GPIOE_2                          0x4A640028u
+#define DV1_PAD_MUX_GPIOE_2_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOE_2_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_GPIOE_3                          0x4A64002Cu
+#define DV1_PAD_MUX_GPIOE_3_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOE_3_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_GPIOE_4                          0x4A640030u
+#define DV1_PAD_MUX_GPIOE_4_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOE_4_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_GPIOE_5                          0x4A640034u
+#define DV1_PAD_MUX_GPIOE_5_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOE_5_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_GPIOE_6                          0x4A640038u
+#define DV1_PAD_MUX_GPIOE_6_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOE_6_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_GPIOE_7                          0x4A64003Cu
+#define DV1_PAD_MUX_GPIOE_7_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOE_7_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_GPIOE_8                          0x4A640040u
+#define DV1_PAD_MUX_GPIOE_8_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOE_8_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_GPIOE_9                          0x4A640044u
+#define DV1_PAD_MUX_GPIOE_9_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOE_9_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_PERSTB_1                         0x4A640048u
+#define DV1_PAD_MUX_PERSTB_1_FIELDNUM                13u
+#define DV1_PAD_MUX_PERSTB_1_DEFAULTVAL              0x0u
+#define DV1_PAD_MUX_ISOLATEB_1                       0x4A64004Cu
+#define DV1_PAD_MUX_ISOLATEB_1_FIELDNUM              13u
+#define DV1_PAD_MUX_ISOLATEB_1_DEFAULTVAL            0x0u
+#define DV1_PAD_MUX_CLKREQB_1                        0x4A640050u
+#define DV1_PAD_MUX_CLKREQB_1_FIELDNUM               13u
+#define DV1_PAD_MUX_CLKREQB_1_DEFAULTVAL             0x0u
+#define DV1_PAD_MUX_LANWAKEB_1                       0x4A640054u
+#define DV1_PAD_MUX_LANWAKEB_1_FIELDNUM              13u
+#define DV1_PAD_MUX_LANWAKEB_1_DEFAULTVAL            0x0u
+#define DV1_PAD_MUX_PERSTB_0                         0x4A640058u
+#define DV1_PAD_MUX_PERSTB_0_FIELDNUM                13u
+#define DV1_PAD_MUX_PERSTB_0_DEFAULTVAL              0x0u
+#define DV1_PAD_MUX_ISOLATEB_0                       0x4A64005Cu
+#define DV1_PAD_MUX_ISOLATEB_0_FIELDNUM              13u
+#define DV1_PAD_MUX_ISOLATEB_0_DEFAULTVAL            0x0u
+#define DV1_PAD_MUX_CLKREQB_0                        0x4A640060u
+#define DV1_PAD_MUX_CLKREQB_0_FIELDNUM               13u
+#define DV1_PAD_MUX_CLKREQB_0_DEFAULTVAL             0x0u
+#define DV1_PAD_MUX_LANWAKEB_0                       0x4A640064u
+#define DV1_PAD_MUX_LANWAKEB_0_FIELDNUM              13u
+#define DV1_PAD_MUX_LANWAKEB_0_DEFAULTVAL            0x0u
+#define DV1_PAD_MUX_PHYRST                           0x4A640068u
+#define DV1_PAD_MUX_PHYRST_FIELDNUM                  13u
+#define DV1_PAD_MUX_PHYRST_DEFAULTVAL                0x0u
+#define DV1_PAD_MUX_DISB                             0x4A64006Cu
+#define DV1_PAD_MUX_DISB_FIELDNUM                    13u
+#define DV1_PAD_MUX_DISB_DEFAULTVAL                  0x0u
+#define DV1_PAD_MUX_GPIOA_0                          0x4A640070u
+#define DV1_PAD_MUX_GPIOA_0_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOA_0_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_GPIOA_1                          0x4A640074u
+#define DV1_PAD_MUX_GPIOA_1_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOA_1_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_GPIOA_2                          0x4A640078u
+#define DV1_PAD_MUX_GPIOA_2_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOA_2_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_GPIOA_3                          0x4A64007Cu
+#define DV1_PAD_MUX_GPIOA_3_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOA_3_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_GPIOB_0                          0x4A640080u
+#define DV1_PAD_MUX_GPIOB_0_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOB_0_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_GPIOB_1                          0x4A640084u
+#define DV1_PAD_MUX_GPIOB_1_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOB_1_DEFAULTVAL               0xFu
+#define DV1_PAD_MUX_GPIOB_2                          0x4A640088u
+#define DV1_PAD_MUX_GPIOB_2_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOB_2_DEFAULTVAL               0xFu
+#define DV1_PAD_MUX_GPIOC_0                          0x4A64008Cu
+#define DV1_PAD_MUX_GPIOC_0_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOC_0_DEFAULTVAL               0xFu
+#define DV1_PAD_MUX_GPIOC_1                          0x4A640090u
+#define DV1_PAD_MUX_GPIOC_1_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOC_1_DEFAULTVAL               0xFu
+#define DV1_PAD_MUX_GPIOC_2                          0x4A640094u
+#define DV1_PAD_MUX_GPIOC_2_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOC_2_DEFAULTVAL               0xFu
+#define DV1_PAD_MUX_GPIOC_3                          0x4A640098u
+#define DV1_PAD_MUX_GPIOC_3_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOC_3_DEFAULTVAL               0xFu
+#define DV1_PAD_MUX_GPIOC_4                          0x4A64009Cu
+#define DV1_PAD_MUX_GPIOC_4_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOC_4_DEFAULTVAL               0xFu
+#define DV1_PAD_MUX_GPIOC_5                          0x4A6400A0u
+#define DV1_PAD_MUX_GPIOC_5_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOC_5_DEFAULTVAL               0xFu
+#define DV1_PAD_MUX_GPIOD_0                          0x4A6400A4u
+#define DV1_PAD_MUX_GPIOD_0_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOD_0_DEFAULTVAL               0xFu
+#define DV1_PAD_MUX_GPIOD_1                          0x4A6400A8u
+#define DV1_PAD_MUX_GPIOD_1_FIELDNUM                 13u
+#define DV1_PAD_MUX_GPIOD_1_DEFAULTVAL               0xFu
+#define DV1_PAD_MUX_XMII_0_CRS                       0x4A6400ACu
+#define DV1_PAD_MUX_XMII_0_CRS_FIELDNUM              13u
+#define DV1_PAD_MUX_XMII_0_CRS_DEFAULTVAL            0xFu
+#define DV1_PAD_MUX_XMII_0_COL                       0x4A6400B0u
+#define DV1_PAD_MUX_XMII_0_COL_FIELDNUM              13u
+#define DV1_PAD_MUX_XMII_0_COL_DEFAULTVAL            0xFu
+#define DV1_PAD_MUX_XMII_0_RXER                      0x4A6400B4u
+#define DV1_PAD_MUX_XMII_0_RXER_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_0_RXER_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_0_RXDV                      0x4A6400B8u
+#define DV1_PAD_MUX_XMII_0_RXDV_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_0_RXDV_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_0_RXD0                      0x4A6400BCu
+#define DV1_PAD_MUX_XMII_0_RXD0_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_0_RXD0_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_0_RXD1                      0x4A6400C0u
+#define DV1_PAD_MUX_XMII_0_RXD1_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_0_RXD1_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_0_RXD2                      0x4A6400C4u
+#define DV1_PAD_MUX_XMII_0_RXD2_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_0_RXD2_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_0_RXD3                      0x4A6400C8u
+#define DV1_PAD_MUX_XMII_0_RXD3_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_0_RXD3_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_0_RXC                       0x4A6400CCu
+#define DV1_PAD_MUX_XMII_0_RXC_FIELDNUM              13u
+#define DV1_PAD_MUX_XMII_0_RXC_DEFAULTVAL            0xFu
+#define DV1_PAD_MUX_XMII_0_TXC                       0x4A6400D0u
+#define DV1_PAD_MUX_XMII_0_TXC_FIELDNUM              13u
+#define DV1_PAD_MUX_XMII_0_TXC_DEFAULTVAL            0xFu
+#define DV1_PAD_MUX_XMII_0_GBIAS                     0x4A6400D4u
+#define DV1_PAD_MUX_XMII_0_GBIAS_FIELDNUM            6u
+#define DV1_PAD_MUX_XMII_0_GBIAS_DEFAULTVAL          0x0u
+#define DV1_PAD_MUX_XMII_0_TXEN                      0x4A6400D8u
+#define DV1_PAD_MUX_XMII_0_TXEN_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_0_TXEN_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_0_TXD0                      0x4A6400DCu
+#define DV1_PAD_MUX_XMII_0_TXD0_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_0_TXD0_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_0_TXD1                      0x4A6400E0u
+#define DV1_PAD_MUX_XMII_0_TXD1_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_0_TXD1_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_0_TXD2                      0x4A6400E4u
+#define DV1_PAD_MUX_XMII_0_TXD2_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_0_TXD2_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_0_TXD3                      0x4A6400E8u
+#define DV1_PAD_MUX_XMII_0_TXD3_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_0_TXD3_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_1_CRS                       0x4A6400ECu
+#define DV1_PAD_MUX_XMII_1_CRS_FIELDNUM              13u
+#define DV1_PAD_MUX_XMII_1_CRS_DEFAULTVAL            0xFu
+#define DV1_PAD_MUX_XMII_1_COL                       0x4A6400F0u
+#define DV1_PAD_MUX_XMII_1_COL_FIELDNUM              13u
+#define DV1_PAD_MUX_XMII_1_COL_DEFAULTVAL            0xFu
+#define DV1_PAD_MUX_XMII_1_RXER                      0x4A6400F4u
+#define DV1_PAD_MUX_XMII_1_RXER_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_1_RXER_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_1_RXDV                      0x4A6400F8u
+#define DV1_PAD_MUX_XMII_1_RXDV_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_1_RXDV_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_1_RXD0                      0x4A6400FCu
+#define DV1_PAD_MUX_XMII_1_RXD0_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_1_RXD0_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_1_RXD1                      0x4A640100u
+#define DV1_PAD_MUX_XMII_1_RXD1_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_1_RXD1_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_1_RXD2                      0x4A640104u
+#define DV1_PAD_MUX_XMII_1_RXD2_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_1_RXD2_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_1_RXD3                      0x4A640108u
+#define DV1_PAD_MUX_XMII_1_RXD3_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_1_RXD3_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_1_RXC                       0x4A64010Cu
+#define DV1_PAD_MUX_XMII_1_RXC_FIELDNUM              13u
+#define DV1_PAD_MUX_XMII_1_RXC_DEFAULTVAL            0xFu
+#define DV1_PAD_MUX_XMII_1_TXC                       0x4A640110u
+#define DV1_PAD_MUX_XMII_1_TXC_FIELDNUM              13u
+#define DV1_PAD_MUX_XMII_1_TXC_DEFAULTVAL            0xFu
+#define DV1_PAD_MUX_XMII_1_GBIAS                     0x4A640114u
+#define DV1_PAD_MUX_XMII_1_GBIAS_FIELDNUM            6u
+#define DV1_PAD_MUX_XMII_1_GBIAS_DEFAULTVAL          0x0u
+#define DV1_PAD_MUX_XMII_1_TXEN                      0x4A640118u
+#define DV1_PAD_MUX_XMII_1_TXEN_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_1_TXEN_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_1_TXD0                      0x4A64011Cu
+#define DV1_PAD_MUX_XMII_1_TXD0_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_1_TXD0_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_1_TXD1                      0x4A640120u
+#define DV1_PAD_MUX_XMII_1_TXD1_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_1_TXD1_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_1_TXD2                      0x4A640124u
+#define DV1_PAD_MUX_XMII_1_TXD2_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_1_TXD2_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_XMII_1_TXD3                      0x4A640128u
+#define DV1_PAD_MUX_XMII_1_TXD3_FIELDNUM             13u
+#define DV1_PAD_MUX_XMII_1_TXD3_DEFAULTVAL           0xFu
+#define DV1_PAD_MUX_SPI_SO                           0x4A64012Cu
+#define DV1_PAD_MUX_SPI_SO_FIELDNUM                  13u
+#define DV1_PAD_MUX_SPI_SO_DEFAULTVAL                0x0u
+#define DV1_PAD_MUX_SPI_SI                           0x4A640130u
+#define DV1_PAD_MUX_SPI_SI_FIELDNUM                  13u
+#define DV1_PAD_MUX_SPI_SI_DEFAULTVAL                0x0u
+#define DV1_PAD_MUX_SPI_SCK                          0x4A640134u
+#define DV1_PAD_MUX_SPI_SCK_FIELDNUM                 13u
+#define DV1_PAD_MUX_SPI_SCK_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_SPI_CSB                          0x4A640138u
+#define DV1_PAD_MUX_SPI_CSB_FIELDNUM                 13u
+#define DV1_PAD_MUX_SPI_CSB_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_SPI_SI2                          0x4A64013Cu
+#define DV1_PAD_MUX_SPI_SI2_FIELDNUM                 13u
+#define DV1_PAD_MUX_SPI_SI2_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_SPI_SI3                          0x4A640140u
+#define DV1_PAD_MUX_SPI_SI3_FIELDNUM                 13u
+#define DV1_PAD_MUX_SPI_SI3_DEFAULTVAL               0x0u
+#define DV1_PAD_MUX_XMII_0_BIAS                      0x4A640144u
+#define DV1_PAD_MUX_XMII_0_BIAS_FIELDNUM             7u
+#define DV1_PAD_MUX_XMII_0_BIAS_DEFAULTVAL           0x0u
+#define DV1_PAD_MUX_XMII_1_BIAS                      0x4A640148u
+#define DV1_PAD_MUX_XMII_1_BIAS_FIELDNUM             7u
+#define DV1_PAD_MUX_XMII_1_BIAS_DEFAULTVAL           0x0u
+#define DV1_PAD_MUX_STRAP_VALUE                      0x4A64014Cu
+#define DV1_PAD_MUX_STRAP_VALUE_FIELDNUM             1u
+#define DV1_PAD_MUX_STRAP_VALUE_DEFAULTVAL           0x0u
+#define DV1_PAD_MUX_STRAP_REG_CHANNEL_SEL            0x4A640150u
+#define DV1_PAD_MUX_STRAP_REG_CHANNEL_SEL_FIELDNUM   2u
+#define DV1_PAD_MUX_STRAP_REG_CHANNEL_SEL_DEFAULTVAL 0x0u
+#define DV1_PAD_MUX_INT_PENDING_00                   0x4A640154u
+#define DV1_PAD_MUX_INT_PENDING_00_FIELDNUM          1u
+#define DV1_PAD_MUX_INT_PENDING_00_DEFAULTVAL        0x0u
+#define DV1_PAD_MUX_INT_PENDING_01                   0x4A640158u
+#define DV1_PAD_MUX_INT_PENDING_01_FIELDNUM          1u
+#define DV1_PAD_MUX_INT_PENDING_01_DEFAULTVAL        0x0u
+#define DV1_PAD_MUX_INT_PENDING_02                   0x4A64015Cu
+#define DV1_PAD_MUX_INT_PENDING_02_FIELDNUM          1u
+#define DV1_PAD_MUX_INT_PENDING_02_DEFAULTVAL        0x0u
+#define DV1_PAD_MUX_PAD_O_STATUS_00                  0x4A640160u
+#define DV1_PAD_MUX_PAD_O_STATUS_00_FIELDNUM         1u
+#define DV1_PAD_MUX_PAD_O_STATUS_00_DEFAULTVAL       0x0u
+#define DV1_PAD_MUX_PAD_O_STATUS_01                  0x4A640164u
+#define DV1_PAD_MUX_PAD_O_STATUS_01_FIELDNUM         1u
+#define DV1_PAD_MUX_PAD_O_STATUS_01_DEFAULTVAL       0x0u
+#define DV1_PAD_MUX_PAD_O_STATUS_02                  0x4A640168u
+#define DV1_PAD_MUX_PAD_O_STATUS_02_FIELDNUM         1u
+#define DV1_PAD_MUX_PAD_O_STATUS_02_DEFAULTVAL       0x0u
+#define DV1_PAD_MUX_PAD_DBGO_00                      0x4A64016Cu
+#define DV1_PAD_MUX_PAD_DBGO_00_FIELDNUM             1u
+#define DV1_PAD_MUX_PAD_DBGO_00_DEFAULTVAL           0x0u
+#define DV1_PAD_MUX_PAD_DBGO_01                      0x4A640170u
+#define DV1_PAD_MUX_PAD_DBGO_01_FIELDNUM             1u
+#define DV1_PAD_MUX_PAD_DBGO_01_DEFAULTVAL           0x0u
+#define DV1_PAD_MUX_PAD_DBGO_02                      0x4A640174u
+#define DV1_PAD_MUX_PAD_DBGO_02_FIELDNUM             1u
+#define DV1_PAD_MUX_PAD_DBGO_02_DEFAULTVAL           0x0u
+#define DV1_PAD_MUX_PAD_DBGO_03                      0x4A640178u
+#define DV1_PAD_MUX_PAD_DBGO_03_FIELDNUM             1u
+#define DV1_PAD_MUX_PAD_DBGO_03_DEFAULTVAL           0x0u
+#define DV1_PAD_MUX_PAD_DBGO_04                      0x4A64017Cu
+#define DV1_PAD_MUX_PAD_DBGO_04_FIELDNUM             1u
+#define DV1_PAD_MUX_PAD_DBGO_04_DEFAULTVAL           0x0u
+#define DV1_PAD_MUX_PAD_DBGO_05                      0x4A640180u
+#define DV1_PAD_MUX_PAD_DBGO_05_FIELDNUM             1u
+#define DV1_PAD_MUX_PAD_DBGO_05_DEFAULTVAL           0x0u
+#define DV1_PAD_MUX_DFT_SCAN_SAF_CTRL                0x4A640184u
+#define DV1_PAD_MUX_DFT_SCAN_SAF_CTRL_FIELDNUM       1u
+#define DV1_PAD_MUX_DFT_SCAN_SAF_CTRL_DEFAULTVAL     0x0u
+#endif
+#endif /* DV1_RTKAS_REG_LIST_FILE_GPIO_H_ */

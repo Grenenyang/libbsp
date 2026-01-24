@@ -1,0 +1,1 @@
+obj-$(CONFIG_SWITCH_RTL9071) += rtl9071/

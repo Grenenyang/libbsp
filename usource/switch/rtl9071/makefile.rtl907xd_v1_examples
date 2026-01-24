@@ -1,0 +1,253 @@
+ifneq (,$(findstring l2, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_lut_fwd.c
+    SRCS += rtl907xd_v1_lut_sa_move.c
+endif
+
+ifneq (,$(findstring ptp, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_ptp_2steps_sync.c
+    SRCS += rtl907xd_v1_ptp_gm_2steps_sync.c
+    SRCS += rtl907xd_v1_ptp_2steps_sync_as2020.c
+    SRCS += rtl907xd_v1_ptp_customize_ethertype.c
+    SRCS += rtl907xd_v1_ptp_no_sync_recovery.c
+    SRCS += rtl907xd_v1_ptp_customize_mac.c
+    SRCS += rtl907xd_v1_ptp_overwrite_myclockID.c
+    SRCS += rtl907xd_v1_ptp_vlan.c
+    SRCS += rtl907xd_v1_ptp_mib.c
+    SRCS += rtl907xd_v1_ptp_dump_cfg.c
+endif
+
+ifneq (,$(findstring vlan, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_vlan_init.c
+    SRCS += rtl907xd_v1_vlan_add_modify_destroy.c
+    SRCS += rtl907xd_v1_vlan_assign_inner_tag.c
+    SRCS += rtl907xd_v1_vlan_grouping_inner_vlan_ids.c
+    SRCS += rtl907xd_v1_vlan_ingress_retagging.c
+    SRCS += rtl907xd_v1_vlan_egress_retagging.c
+    SRCS += rtl907xd_v1_vlan_fwd_outer_tag.c
+endif
+
+ifneq (,$(findstring stacking, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_stacking_init.c
+    SRCS += rtl907xd_v1_stacking_otp.c
+    SRCS += rtl907xd_v1_stacking_flashless_update.c
+endif
+
+ifneq (,$(findstring routing, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_routing_static_routing.c
+    SRCS += rtl907xd_v1_routing_static_routing_fir.c
+    SRCS += rtl907xd_v1_routing_filter.c
+    SRCS += rtl907xd_v1_routing_dynamic_direct.c
+    SRCS += rtl907xd_v1_routing_dynamic_remote.c
+endif
+
+ifneq (,$(findstring acl, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_acl_aggregation.c
+    SRCS += rtl907xd_v1_acl_cpy_to_cpu.c
+    SRCS += rtl907xd_v1_acl_dscp_rmk.c
+    SRCS += rtl907xd_v1_acl_ivid_rmk.c
+    SRCS += rtl907xd_v1_acl_ovid_rmk.c
+    SRCS += rtl907xd_v1_acl_pri_assign.c
+    SRCS += rtl907xd_v1_acl_pri_rmk.c
+    SRCS += rtl907xd_v1_acl_redirect.c
+    SRCS += rtl907xd_v1_acl_white_list.c
+    SRCS += rtl907xd_v1_acl_abnoraml.c
+    SRCS += rtl907xd_v1_acl_timer_discard.c
+endif
+
+ifneq (,$(findstring opfsm, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_opfsm_sleep_wake_intf_cfg.c
+    SRCS += rtl907xd_v1_opfsm_sleep_wake_service.c
+endif
+
+ifneq (,$(findstring ethernet-access, $(RTL906X_MODULES)))
+     SRCS += rtl907xd_v1_etherAccess_flash_access_flow.c
+     SRCS += rtl907xd_v1_etherAccess_patch_access_flow.c
+     SRCS += rtl907xd_v1_etherAccess_reg_read_write_flow.c
+     SRCS += rtl907xd_v1_etherAccess_table_read_write_flow.c
+     SRCS += rtl907xd_v1_etherAccess_otp_flow.c
+endif
+
+ifneq (,$(findstring port-mirror, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_mirroring_portbased.c
+    SRCS += rtl907xd_v1_mirroring_flowbased.c
+    SRCS += rtl907xd_v1_mirroring_switches.c
+    SRCS += rtl907xd_v1_mirroring_dpm.c
+    SRCS += rtl907xd_v1_mirroring_flowbased_rspan.c
+    SRCS += rtl907xd_v1_mirroring_reset.c
+endif
+
+ifneq (,$(findstring stp, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_stp_enable_stp.c
+    SRCS += rtl907xd_v1_stp_enable_rstp.c
+    SRCS += rtl907xd_v1_stp_migration_check_set.c
+    SRCS += rtl907xd_v1_stp_set_port_state.c
+endif
+
+ifneq (,$(findstring single-loop, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_single_loop_enable.c
+    SRCS += rtl907xd_v1_single_loop_reinit.c
+endif
+
+ifneq (,$(findstring qos, $(RTL906X_MODULES)))
+     SRCS += rtl907xd_v1_qos_queue_bw_limit.c
+     SRCS += rtl907xd_v1_qos_port_bw_limit.c
+     SRCS += rtl907xd_v1_qos_port_based_priority.c
+     SRCS += rtl907xd_v1_qos_hybrid_based_priority.c
+     SRCS += rtl907xd_v1_qos_traffic_queuing_and_scheduler.c
+     SRCS += rtl907xd_v1_qos_inner_priority_remarking.c
+     SRCS += rtl907xd_v1_qos_outer_priority_remarking.c
+     SRCS += rtl907xd_v1_qos_dscp_remarking.c
+     SRCS += rtl907xd_v1_qos_strict_priority_and_wrr.c
+endif
+
+ifneq (,$(findstring qav, $(RTL906X_MODULES)))
+     SRCS += rtl907xd_v1_qav_priority_regeneration_override.c
+     SRCS += rtl907xd_v1_qav_strict_priority_and_cbs.c
+endif
+
+ifneq (,$(findstring pcie, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_pcie.c
+    SRCS += rtl907xd_v1_pcie_link_speed.c
+    SRCS += rtl907xd_v1_pcie_lane.c
+    SRCS += rtl907xd_v1_pcie_ptm.c
+endif
+
+ifneq (,$(findstring port-isolation, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_isolation_single.c
+    SRCS += rtl907xd_v1_isolation_multi.c
+endif
+
+ifneq (,$(findstring storm-ctrl, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_storm_ctl_broadcast.c
+    SRCS += rtl907xd_v1_storm_ctl_multicast.c
+    SRCS += rtl907xd_v1_storm_ctl_unicast.c
+endif
+
+ifneq (,$(findstring link-aggregation, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_linkagg_balance.c
+    SRCS += rtl907xd_v1_linkagg_balance_ethertype.c
+    SRCS += rtl907xd_v1_linkagg_balance_protocol.c
+    SRCS += rtl907xd_v1_linkagg_balance_l4dport.c
+    SRCS += rtl907xd_v1_linkagg_hash.c
+endif
+
+ifneq (,$(findstring mib, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_mib_all_port_reset.c
+    SRCS += rtl907xd_v1_mib_all_port_start.c
+    SRCS += rtl907xd_v1_mib_all_port_stop.c
+    SRCS += rtl907xd_v1_mib_get_ale_drop_reason.c
+    SRCS += rtl907xd_v1_mib_max_queue_level_get.c
+    SRCS += rtl907xd_v1_mib_per_port_get_counter.c
+    SRCS += rtl907xd_v1_mib_per_port_get_rx_drop_reason.c
+    SRCS += rtl907xd_v1_mib_per_port_reset.c
+    SRCS += rtl907xd_v1_mib_per_port_start.c
+    SRCS += rtl907xd_v1_mib_per_port_stop.c
+endif
+
+ifneq (,$(findstring interface, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_system_interface.c
+endif
+
+ifneq (,$(findstring smi-master, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_mdx_access_std.c
+endif
+
+ifneq (,$(findstring spi-flash, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_spi_flash_erase_all.c
+    SRCS += rtl907xd_v1_spi_flash_access.c
+    SRCS += rtl907xd_v1_spi_flash_update_image.c
+    SRCS += rtl907xd_v1_spi_flash_read_id.c
+    SRCS += rtl907xd_v1_spi_flash_update_image_via_ethernet.c
+endif
+
+ifneq (,$(findstring sys-boot, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_eth_flashless_update.c
+    SRCS += rtl907xd_v1_flashless_update.c
+    SRCS += rtl907xd_v1_flashless_reglist.c
+endif
+
+ifneq (,$(findstring system, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_system_chip.c
+endif
+
+ifneq (,$(findstring serdes, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_serdes_reg.c
+endif
+
+ifneq (,$(findstring otp, $(RTL906X_MODULES)))
+     SRCS += rtl907xd_v1_otp_rw.c
+endif
+
+ifneq (,$(findstring phy-test-mode, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_phy_rtct.c
+    SRCS += rtl907xd_v1_phy_sqi.c
+    SRCS += rtl907xd_v1_phy_testmode.c
+endif
+
+ifneq (,$(findstring phy-port, $(RTL906X_MODULES)))
+	SRCS += rtl907xd_v1_phy.c
+endif
+
+ifneq (,$(findstring flowctrl, $(RTL906X_MODULES)))
+     SRCS += rtl907xd_v1_flow_ctrl_enable.c
+     SRCS += rtl907xd_v1_flow_ctrl_disable.c
+     SRCS += rtl907xd_v1_flow_ctrl_get_status.c
+     SRCS += rtl907xd_v1_flow_ctrl_page_cnt_limit.c
+endif
+
+ifneq (,$(findstring igmp, $(RTL906X_MODULES)))
+    SRCS += rtl907xd_v1_igmp.c
+endif
+
+ifneq (,$(findstring macphy, $(RTL906X_MODULES)))
+## Include file
+    SRCS += rtl907xd_v1_macphy_get_spi_param.c
+endif
+
+ifneq (,$(findstring macsec, $(RTL906X_MODULES)))
+## Include file
+    SRCS += rtl907xd_v1_macsec_mka_dump_config.c
+    SRCS += rtl907xd_v1_macsec_mka_flash_type_cak.c
+    SRCS += rtl907xd_v1_macsec_mka_otp_type_cak.c
+    SRCS += rtl907xd_v1_macsec_counters.c
+    SRCS += rtl907xd_v1_macsec_control_packet.c
+    SRCS += rtl907xd_v1_macsec_flow.c
+endif
+
+ifneq (,$(findstring reset, $(RTL906X_MODULES)))
+     SRCS += rtl907xd_v1_reset_chip.c
+endif
+
+ifneq (,$(findstring led, $(RTL906X_MODULES)))
+#    SRCS += led_festatus.c
+endif
+
+ifneq (,$(findstring psfp, $(RTL906X_MODULES)))
+#    SRCS += psfp.c
+endif
+
+ifneq (,$(findstring st-qbv, $(RTL906X_MODULES)))
+#    SRCS += tsn_qbv_adminGateState.c
+#    SRCS += tsn_qbv_gateControlList.c
+#    SRCS += tsn_qbv_queueMaxSdu.c
+endif
+
+ifneq (,$(findstring dot1x, $(RTL906X_MODULES)))
+#     SRCS += dot1x_egressfilter.c
+#     SRCS += dot1x_ingressfilter.c
+#    SRCS += dot1x_config_forceunauth.c
+#     SRCS += dot1x_config_handshake.c
+#    SRCS += dot1x_config_aging_time.c
+#    SRCS += dot1x_config_get.c
+#    SRCS += dot1x_reset_register.c
+endif
+
+ifneq (,$(findstring cb-frer, $(RTL906X_MODULES)))
+#    SRCS += cb_egress_active_sid.c
+#    SRCS += cb_egress_elimination.c
+#    SRCS += cb_egress_replication.c
+#    SRCS += cb_ingress_elimination.c
+#    SRCS += cb_get_allconfig.c
+#    SRCS += cb_reset_reg_andtbl.c
+#    SRCS += cb_reset_single_entry.c
+endif

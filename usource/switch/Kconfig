@@ -1,0 +1,6 @@
+
+config DRIVER_RTL9071
+    bool "build switch 9071"
+    depends on CLASS_SWITCH
+    help
+        class switch.

@@ -1,0 +1,17 @@
+# usource/Kconfig - 用户态驱动配置（包含 core 核心代码）
+menu "Usource Configuration"
+
+# 驱动配置开关
+menuconfig CLASS_SWITCH
+    bool "class switch"
+    default n
+    help
+        class switch.
+source "$(PRJ_ROOT)/usource/switch/Kconfig"
+config CLASS_PHY
+    bool "classs phy"
+    default b
+    help
+        class phy
+
+endmenu

@@ -1,0 +1,5 @@
+mainmenu "WT eth tool Build Configuration"
+
+source "$(PRJ_ROOT)/usource/Kconfig"
+
+source "$(PRJ_ROOT)/ksource/Kconfig"
