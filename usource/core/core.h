@@ -7,8 +7,6 @@
 #include <pthread.h>
 #include <stddef.h>
 #include <errno.h>
-#include <dlfcn.h>
-#include <link.h>
 
 // ====================== 1. 通用基础定义 ======================
 #define HW_OK          0
@@ -140,43 +138,6 @@ typedef struct hw_class {
     void *priv;
 } hw_class_t;
 
-// ====================== 5. 驱动模块管理（修复Section宏定义） ======================
-typedef struct hw_driver_module {
-    const char *name;
-    int (*init)(void);
-    void (*exit)(void);
-    const char *description;
-    const char *version;
-    struct hw_driver_module *next;
-} hw_driver_module_t;
-
-// 修复：Section名直接用字符串，避免宏拼接错误
-#define HW_DRV_MODULE_SECTION_STR ".hw_drv_modules"
-// 链接器自动生成的Section起止符号（关键修复：3个下划线）
-#define HW_DRV_MODULE_START_SYM __start___hw_drv_modules
-#define HW_DRV_MODULE_STOP_SYM  __stop___hw_drv_modules
-
-// 修复：module_init宏（直接指定Section字符串，无宏拼接）
-#define module_init(init_func)                                                                 \
-    static struct hw_driver_module __mod_##init_func __attribute__((section(HW_DRV_MODULE_SECTION_STR), aligned(8), used)) = { \
-        .name = #init_func,                                                                    \
-        .init = init_func,                                                                     \
-        .exit = NULL,                                                                          \
-        .description = "RTL907X " #init_func " driver module",                                \
-        .version = "1.0",                                                                      \
-    };
-
-#define module_exit(exit_func)                                                                 \
-    static void __exit_##exit_func(void) {                                                     \
-        if (exit_func) exit_func();                                                            \
-    }
-
-#define MODULE_DESCRIPTION(desc) static const char *__mod_desc = desc;
-#define MODULE_VERSION(ver) static const char *__mod_version = ver;
-
-// 全局模块链表
-extern struct hw_driver_module *hw_module_list;
-extern pthread_mutex_t hw_module_lock;
 
 // ====================== 6. 核心接口声明 ======================
 // Class相关
@@ -196,13 +157,4 @@ void hw_device_remove(hw_class_t *cls, hw_device_t *dev);
 int hw_device_driver_match(hw_class_t *cls);
 void hw_device_driver_unbind_all(hw_class_t *cls);
 
-// Section相关核心接口
-int hw_module_scan_section(void);
-void hw_module_register(hw_driver_module_t *mod);
-int hw_core_init_all_modules(void);
-void hw_core_exit_all_modules(void);
-
-#ifndef __init
-#define __init __attribute__((unused))
-#endif
 #endif // __CORE_H__

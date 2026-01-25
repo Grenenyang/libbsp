@@ -1,5 +1,7 @@
 #include "core.h"
-
+#include "cJSON.h"
+#include "autoconf.h"
+#include "wt_tools_class.h"
 // ====================== 全局变量 ======================
 struct hw_driver_module *hw_module_list = NULL;
 pthread_mutex_t hw_module_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -58,11 +60,13 @@ void hw_class_deinit(hw_class_t *cls) {
     HW_INFO("Class %s deinit success\n", cls->name);
 }
 
-int hw_class_get_drv_count(hw_class_t *cls) {
+int hw_class_get_drv_count(hw_class_t *cls)
+{
     return (cls != NULL) ? cls->drv_count : 0;
 }
 
-int hw_class_get_dev_count(hw_class_t *cls) {
+int hw_class_get_dev_count(hw_class_t *cls) 
+{
     return (cls != NULL) ? cls->dev_count : 0;
 }
 
@@ -271,161 +275,130 @@ void hw_device_driver_unbind_all(hw_class_t *cls) {
 
     pthread_mutex_unlock(&cls->lock);
 }
+/**
+ * @brief 读取文件内容到缓冲区
+ * @param file_path JSON文件路径
+ * @param file_len 输出参数，文件长度
+ * @return 成功返回缓冲区指针，失败返回NULL
+ */
+char* read_file_to_buf(const char *file_path, long *file_len) {
+    if (!file_path || !file_len) {
+        printf("错误：文件路径或长度指针为空\n");
+        return NULL;
+    }
 
-// ====================== Section版模块管理核心实现） ======================
+    // 打开文件（二进制模式避免换行符问题）
+    FILE *fp = fopen(file_path, "rb");
+    if (!fp) {
+        printf("错误：打开文件失败 %s\n", file_path);
+        return NULL;
+    }
 
-#include <elf.h>
-#include <link.h>
-
-// 新增：ELF Section遍历回调函数（获取.hw_drv_modules Section的地址）
-static int find_hw_drv_section(struct dl_phdr_info *info, size_t size, void *data) {
-    (void)size;
-    void **section_info = (void **)data;
-    void *start = NULL;
-    void *end = NULL;
-
-    // 遍历ELF Program Header
-    for (int i = 0; i < info->dlpi_phnum; i++) {
-        const Elf64_Phdr *phdr = &info->dlpi_phdr[i];
-        if (phdr->p_type != PT_LOAD) continue;
-
-        // 打开SO文件，读取Section头
-        FILE *fp = fopen(info->dlpi_name, "rb");
-        if (!fp) continue;
-
-        Elf64_Ehdr ehdr;
-        fread(&ehdr, sizeof(ehdr), 1, fp);
-        fseek(fp, ehdr.e_shoff, SEEK_SET);
-
-        Elf64_Shdr shdr;
-        for (int j = 0; j < ehdr.e_shnum; j++) {
-            fread(&shdr, sizeof(shdr), 1, fp);
-            // 查找.hw_drv_modules Section
-            if (shdr.sh_type == SHT_PROGBITS) {
-                fseek(fp, ehdr.e_shoff + ehdr.e_shentsize * j + shdr.sh_name, SEEK_SET);
-                char sh_name[256] = {0};
-                fread(sh_name, 1, sizeof(sh_name)-1, fp);
-                if (strcmp(sh_name, ".hw_drv_modules") == 0) {
-                    // 计算Section的实际内存地址
-                    start = (void *)(info->dlpi_addr + shdr.sh_addr);
-                    end = (void *)((uint8_t *)start + shdr.sh_size);
-                    break;
-                }
-            }
-        }
+    // 获取文件长度
+    fseek(fp, 0, SEEK_END);
+    *file_len = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+    if (*file_len <= 0) {
+        printf("错误：文件为空 %s\n", file_path);
         fclose(fp);
-        if (start) break;
+        return NULL;
     }
 
-    if (start && end) {
-        section_info[0] = start;
-        section_info[1] = end;
-        return 1; // 找到后停止遍历
+    // 分配缓冲区（+1 预留字符串结束符）
+    char *buf = (char*)malloc(*file_len + 1);
+    if (!buf) {
+        printf("错误：内存分配失败\n");
+        fclose(fp);
+        return NULL;
     }
+
+    // 读取文件内容
+    size_t read_len = fread(buf, 1, *file_len, fp);
+    if (read_len != *file_len) {
+        printf("错误：读取文件不完整，预期%ld字节，实际%zu字节\n", *file_len, read_len);
+        free(buf);
+        fclose(fp);
+        return NULL;
+    }
+    buf[*file_len] = '\0';  // 字符串结束符
+
+    fclose(fp);
+    return buf;
+}
+/**
+ * @brief 判断是否为类Key（以class_开头）
+ */
+int is_class_key(const char *key) {
+    return key && strncmp(key, "class_", strlen("class_")) == 0;
+}
+
+/**
+ * @brief 判断是否为设备Key（以device_开头）
+ */
+int is_device_key(const char *key) {
+    return key && strncmp(key, "device_", strlen("device_")) == 0;
+}
+
+static struct hw_class* find_class(char *name)
+{
+    for (int i = 0; generate_class_list[i] != NULL; i++)
+    {
+	if(!strcmp(name,generate_class_list[i]->name))
+	{
+		return generate_class_list[i];
+	}
+    }
+    return NULL;
+}
+static int parse_all_class(cJSON *root_node)
+{
+    struct hw_class *cls = NULL;
+
+    cJSON *child = NULL;
+    child = root_node->child;
+
+    while(child != NULL)
+    {
+    	if (!is_class_key(child->string)) 
+	{
+		child = child->next;
+		continue;
+	}
+	cJSON *name = cJSON_GetObjectItem(child, "name");
+	if(!name)
+	{
+		child = child->next;
+		continue;
+	}
+	cls = find_class(name->valuestring);
+	if(cls == NULL)
+	{
+		printf("%s not find\n",name->valuestring);
+		continue;
+	}
+	printf("%s find\n",name->valuestring);
+	child = child->child;
+
+    }
+
     return 0;
 }
-
-// 重写：扫描.hw_drv_modules Section（不依赖__start/__stop符号）
-int hw_module_scan_section(void) {
-    HW_INFO("Start scan .hw_drv_modules section (ELF parse mode)...\n");
-
-    // 解析ELF，获取Section起止地址
-    void *section_info[2] = {NULL, NULL};
-    dl_iterate_phdr(find_hw_drv_section, section_info);
-    
-    if (!section_info[0] || !section_info[1]) {
-        HW_ERR("Failed to find .hw_drv_modules section\n");
-        return HW_ERR_SECTION;
+int wt_tools_init()
+{
+    long file_len = 0;
+    char *json_buf = read_file_to_buf(CONFIG_JSON_PATH, &file_len);
+    if (!json_buf) 
+    {
+        return -1;
     }
 
-    struct hw_driver_module *mod = (struct hw_driver_module *)section_info[0];
-    struct hw_driver_module *stop = (struct hw_driver_module *)section_info[1];
-    int scan_count = 0;
-
-    // 遍历Section内的驱动模块
-    for (; mod < stop; mod++) {
-        if (mod->name == NULL) {
-            HW_WARN("Skip invalid module (name is NULL)\n");
-            continue;
-        }
-        hw_module_register(mod);
-        scan_count++;
-        HW_DEBUG("Scan module: %s (desc: %s, ver: %s)\n",
-                 mod->name, mod->description ? mod->description : "none",
-                 mod->version ? mod->version : "none");
+    // 3. 解析JSON字符串
+    cJSON *root_node = cJSON_Parse(json_buf);
+    free(json_buf);  // 解析完成后释放文件缓冲区
+    if (!root_node)
+    {
+        printf("错误：JSON解析失败 %s\n", cJSON_GetErrorPtr());
+        return -1;
     }
-
-    if (scan_count == 0) {
-        HW_WARN("No module found in .hw_drv_modules section\n");
-        return HW_ERR_SECTION;
-    }
-
-    HW_INFO("Scan section success (found %d modules)\n", scan_count);
-    return HW_OK;
+    return parse_all_class(root_node);
 }
-
-void hw_module_register(hw_driver_module_t *mod) {
-    if (mod == NULL || mod->name == NULL) {
-        HW_ERR("hw_module_register: invalid module (mod=%p)\n", mod);
-        return;
-    }
-
-    pthread_mutex_lock(&hw_module_lock);
-
-    // 头插法加入全局链表
-    mod->next = hw_module_list;
-    hw_module_list = mod;
-
-    pthread_mutex_unlock(&hw_module_lock);
-
-    HW_INFO("Module %s register success [Section]\n", mod->name);
-}
-
-int hw_core_init_all_modules(void) {
-    HW_INFO("Start init all driver modules...\n");
-
-    pthread_mutex_lock(&hw_module_lock);
-    struct hw_driver_module *mod = hw_module_list;
-    int ret = HW_OK;
-    int init_count = 0;
-
-    while (mod) {
-        if (mod->init) {
-            ret = mod->init();
-            if (ret != HW_OK) {
-                HW_ERR("Module %s init failed (ret=%d)\n", mod->name, ret);
-                pthread_mutex_unlock(&hw_module_lock);
-                return ret;
-            }
-            init_count++;
-            HW_INFO("Module %s init success\n", mod->name);
-        }
-        mod = mod->next;
-    }
-
-    pthread_mutex_unlock(&hw_module_lock);
-
-    HW_INFO("All modules init success (total: %d)\n", init_count);
-    return HW_OK;
-}
-
-void hw_core_exit_all_modules(void) {
-    HW_INFO("Start exit all driver modules...\n");
-
-    pthread_mutex_lock(&hw_module_lock);
-    struct hw_driver_module *mod = hw_module_list;
-    int exit_count = 0;
-
-    while (mod) {
-        if (mod->exit) {
-            mod->exit();
-            exit_count++;
-            HW_INFO("Module %s exit success\n", mod->name);
-        }
-        mod = mod->next;
-    }
-
-    pthread_mutex_unlock(&hw_module_lock);
-    HW_INFO("All modules exit success (total: %d)\n", exit_count);
-}
-struct hw_class g_class_switch;

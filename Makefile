@@ -43,11 +43,13 @@ export CFLAGS
 
 TARGET_LIB_LFLAGS  = -lm -lpthread -shared -fPIC
 generate:
-	$(PRJ_ROOT)/build/script/generate_class_h.sh  -c $(PRJ_BUILD_ROOT)/.config -o  $(PRJ_BUILD_ROOT)/include/generated/wt_tools_class.h -t "struct class"
+	$(PRJ_ROOT)/build/script/generate_class_h.sh  -c $(PRJ_BUILD_ROOT)/.config -o  $(PRJ_BUILD_ROOT)/include/generated/wt_tools_class.h -t "struct hw_class"
 	@echo $(PRJ_BUILD_ROOT)/include/generated/wt_tools_class.h has been built!
+	$(PRJ_ROOT)/build/script/generate_driver_h.sh  -c $(PRJ_BUILD_ROOT)/.config -o  $(PRJ_BUILD_ROOT)/include/generated/wt_tools_driver.h -t "struct hw_driver"
+	 @echo $(PRJ_BUILD_ROOT)/include/generated/wt_tools_driver.h has been built!
 
 $(PRJ_BUILD_ROOT)/libwttools.so: generate  $(PRJ_BUILD_ROOT)/usource/built-in.o 
-	$(CROSS_COMPILE)gcc $(TARGET_LIB_LFLAGS) -o $@ $(PRJ_BUILD_ROOT)/usource/built-in.o 
+	$(CROSS_COMPILE)gcc $(TARGET_LIB_LFLAGS) -o $@ $(PRJ_BUILD_ROOT)/usource/built-in.o -lm
 	mkdir -p $(PRJ_BUILD_ROOT)/strip
 	$(CROSS_COMPILE)strip $@ -o $(PRJ_BUILD_ROOT)/strip/libupdate.so
 	@cp $(PRJ_ROOT)/unpack/update.h $(PRJ_BUILD_ROOT)/update.h

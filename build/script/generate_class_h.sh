@@ -53,7 +53,7 @@ else
         # 提取CONFIG_CLASS_后的关键字（如SWITCH）
         class_key=$(echo "$line" | sed -E 's/^[[:space:]]*CONFIG_CLASS_([A-Z0-9_]+)[[:space:]]*=[[:space:]]*y[[:space:]]*$/\1/' | tr 'A-Z' 'a-z')
         # 生成实例行
-        INSTANCE_LINE="${CLASS_STRUCT_TYPE} g_class_${class_key};  // 对应CONFIG_CLASS_$(echo "$class_key" | tr 'a-z' 'A-Z')=y"
+        INSTANCE_LINE="${CLASS_STRUCT_TYPE} class_${class_key};  // 对应CONFIG_CLASS_$(echo "$class_key" | tr 'a-z' 'A-Z')=y"
         CLASS_INSTANCES="extern ${CLASS_INSTANCES}${INSTANCE_LINE}"$'\n'
     done < <(echo "$MATCH_LINES")
 
@@ -98,7 +98,7 @@ cat >> "$OUTPUT_HEADER" << EOF
 
 
 // 3. 自动生成的类实例数组（末尾带终止符）
-static struct class *generate_class_list[] = {
+static struct hw_class *generate_class_list[] = {
 EOF
 
 # 第四步：写入动态生成的数组项

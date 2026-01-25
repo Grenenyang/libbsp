@@ -839,7 +839,7 @@ static int rtk9071_port_vlan_double_tag_get(uint32_t port,vlan_accept_double_tag
     *vlan_accept_double_tag =(vlan_accept_double_tag_e)vlanPortAcptDoubleTagInfo.acceptDoubleTag;
     return ret;
 }
-static tswitch_t rtk9071_switch =
+static wtswitch_t rtk9071_switch =
 {
     .sdk_init = rtk9071_sdk_init,
     .sdk_deinit = rtk9071_sdk_deinit,
