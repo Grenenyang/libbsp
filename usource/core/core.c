@@ -1,7 +1,9 @@
 #include "core.h"
+#include <stddef.h>
 #include "cJSON.h"
 #include "autoconf.h"
 #include "wt_tools_class.h"
+#include "wt_tools_driver.h"
 // ====================== 全局变量 ======================
 struct hw_driver_module *hw_module_list = NULL;
 pthread_mutex_t hw_module_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -101,7 +103,7 @@ int hw_driver_register(hw_class_t *cls, hw_driver_t *drv) {
             drv->name, cls->name, cls->drv_count);
     return HW_OK;
 }
-
+#if 0
 void hw_driver_unregister(hw_class_t *cls, hw_driver_t *drv) {
     if (cls == NULL || drv == NULL) return;
 
@@ -126,7 +128,7 @@ void hw_driver_unregister(hw_class_t *cls, hw_driver_t *drv) {
 
     HW_INFO("Driver %s unregister from class %s success\n", drv->name, cls->name);
 }
-
+#endif
 void hw_driver_unregister_all_from_class(hw_class_t *cls) {
     if (cls == NULL) return;
 
@@ -174,7 +176,7 @@ int hw_device_add(hw_class_t *cls, hw_device_t *dev) {
             dev->name, cls->name, cls->dev_count);
     return HW_OK;
 }
-
+#if 0
 void hw_device_remove(hw_class_t *cls, hw_device_t *dev) {
     if (cls == NULL || dev == NULL) return;
 
@@ -196,9 +198,11 @@ void hw_device_remove(hw_class_t *cls, hw_device_t *dev) {
 
     HW_INFO("Device %s remove from class %s success\n", dev->name, cls->name);
 }
-
-int hw_device_driver_match(hw_class_t *cls) {
-    if (cls == NULL) {
+#endif
+int hw_device_driver_match(hw_class_t *cls)
+{
+    if (cls == NULL)
+    {
         HW_ERR("hw_device_driver_match: invalid class (cls=%p)\n", cls);
         return HW_ERR_INVAL;
     }
@@ -210,21 +214,25 @@ int hw_device_driver_match(hw_class_t *cls) {
     hw_driver_t *drv;
 
     // 遍历所有设备，匹配兼容的驱动
-    hw_list_for_each_entry(dev, &cls->dev_list, node) {
-        if (dev->compatible == NULL) {
+    hw_list_for_each_entry(dev, &cls->dev_list, node)
+    {
+        if (dev->compatible == NULL)
+        {
             HW_WARN("Device %s has no compatible field, skip match\n", dev->name);
             continue;
         }
 
         // 遍历所有驱动，匹配compatible
-        hw_list_for_each_entry(drv, &cls->drv_list, node) {
-            if (drv->compatible && strcmp(dev->compatible, drv->compatible) == 0) {
+        hw_list_for_each_entry(drv, &cls->drv_list, node)
+        {
+            if (drv->compatible && strcmp(dev->compatible, drv->compatible) == 0)
+            {
                 dev->drv = drv;
                 match_count++;
 
                 // 执行probe初始化
-                if (drv->ops && drv->ops->probe) {
-                    int ret = drv->ops->probe(dev);
+                if (drv && drv->probe) {
+                    int ret = drv->probe(dev);
                     if (ret != HW_OK) {
                         HW_ERR("Device %s probe failed (driver: %s, ret=%d)\n",
                                dev->name, drv->name, ret);
@@ -256,7 +264,6 @@ int hw_device_driver_match(hw_class_t *cls) {
             cls->name, match_count, cls->dev_count);
     return HW_OK;
 }
-
 void hw_device_driver_unbind_all(hw_class_t *cls) {
     if (cls == NULL) return;
 
@@ -264,10 +271,9 @@ void hw_device_driver_unbind_all(hw_class_t *cls) {
 
     hw_device_t *dev;
     hw_list_for_each_entry(dev, &cls->dev_list, node) {
-        if (dev->drv) {
-            if (dev->drv->ops && dev->drv->ops->remove) {
-                dev->drv->ops->remove(dev);
-            }
+        if (dev->drv && dev->drv->remove)
+        {
+            dev->drv->remove(dev);
             dev->drv = NULL;
             HW_INFO("Device %s unbind driver success\n", dev->name);
         }
@@ -350,6 +356,67 @@ static struct hw_class* find_class(char *name)
     }
     return NULL;
 }
+
+static struct hw_driver* find_driver(char *name)
+{
+    for (int i = 0; generate_driver_list[i] != NULL; i++)
+    {
+	if(!strcmp(name,generate_driver_list[i]->name))
+	{
+		return generate_driver_list[i];
+	}
+    }
+    return NULL;
+}
+static int parse_device_node(cJSON *root_node,hw_device_t *dev)
+{
+    hw_driver_t *drv = NULL;
+    cJSON *compatible = cJSON_GetObjectItem(root_node, "compatible");
+    if(!compatible)
+    {
+        printf("%s compatile not find\n",dev->name);
+        return -1;
+    }
+    drv = find_driver(compatible->valuestring);
+    if(!drv)
+    {
+        printf("%s not match driver\n",compatible->valuestring);
+        return -1;
+    }
+    hw_driver_register(dev->cls, drv);
+    return 0;
+}
+static int parse_device(cJSON *root_node,struct hw_class *cls)
+{
+    struct hw_device *dev = NULL;
+    cJSON *child = NULL;
+    child = root_node->child;
+    while(child != NULL)
+    {
+        if (!is_device_key(child->string)) 
+	{
+		child = child->next;
+		continue;
+	}
+        dev =(struct hw_device *) malloc(sizeof(struct hw_device));
+        if(!dev)
+        {
+            printf("dev malloc error\n");
+            return -1;
+        }
+	memset(dev, 0, sizeof(hw_device_t));
+        dev->name = strdup(child->string);
+        if (dev->name == NULL) {
+            HW_ERR("%s: strdup failed (errno=%d)\n",__FUNCTION__, errno);
+            return HW_ERR_INVAL;
+        }
+        dev->root = child;
+        hw_device_add(cls,dev);
+        parse_device_node(child, dev);
+	child = child->next;
+    }
+    return 0;
+}
 static int parse_all_class(cJSON *root_node)
 {
     struct hw_class *cls = NULL;
@@ -364,20 +431,17 @@ static int parse_all_class(cJSON *root_node)
 		child = child->next;
 		continue;
 	}
-	cJSON *name = cJSON_GetObjectItem(child, "name");
-	if(!name)
-	{
-		child = child->next;
-		continue;
-	}
-	cls = find_class(name->valuestring);
+	cls = find_class(child->valuestring);
 	if(cls == NULL)
 	{
-		printf("%s not find\n",name->valuestring);
+		printf("%s not find\n",child->valuestring);
+                child = child->next;
 		continue;
 	}
-	printf("%s find\n",name->valuestring);
-	child = child->child;
+	printf("%s find\n",child->valuestring);
+        hw_class_init(cls,cls->name);
+        parse_device(child,cls);
+	child = child->next;
 
     }
 

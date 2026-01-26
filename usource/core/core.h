@@ -1,6 +1,6 @@
 #ifndef __CORE_H__
 #define __CORE_H__
-
+#include "cJSON.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -102,17 +102,13 @@ static inline int hw_list_empty(const hw_list_node_t *head) {
 struct hw_device;
 struct hw_class;
 
-typedef struct hw_driver_ops {
-    int (*probe)(struct hw_device *dev);
-    void (*remove)(struct hw_device *dev);
-    int (*read_reg)(struct hw_device *dev, unsigned int reg, unsigned int *val);
-    int (*write_reg)(struct hw_device *dev, unsigned int reg, unsigned int val);
-} hw_driver_ops_t;
 
 typedef struct hw_driver {
     char *name;
     char *compatible;
-    hw_driver_ops_t *ops;
+    int (*probe)(struct hw_device *dev);
+    int (*remove)(struct hw_device *dev);
+    void *ops;
     void *priv;
     hw_list_node_t node;
 } hw_driver_t;
@@ -120,10 +116,9 @@ typedef struct hw_driver {
 typedef struct hw_device {
     char *name;
     char *compatible;
-    unsigned int reg_base;
-    unsigned int irq;
     struct hw_driver *drv;
     struct hw_class *cls;
+    cJSON *root;
     void *priv;
     hw_list_node_t node;
 } hw_device_t;

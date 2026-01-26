@@ -98,7 +98,7 @@ cat >> "$OUTPUT_HEADER" << EOF
 
 
 // 3. 自动生成的类实例数组（末尾带终止符）
-static struct class *generate_driver_list[] = {
+static struct hw_driver *generate_driver_list[] = {
 EOF
 
 # 第四步：写入动态生成的数组项

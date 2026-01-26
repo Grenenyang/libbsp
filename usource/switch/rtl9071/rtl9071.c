@@ -7,7 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
-#include "wtswitch.h"
+#include "../switch.h"
 #include "rtkas_api_ext.h"
 #include "rtkas_api_system.h"
 #include "rtkas_api_phy.h"
@@ -839,7 +839,7 @@ static int rtk9071_port_vlan_double_tag_get(uint32_t port,vlan_accept_double_tag
     *vlan_accept_double_tag =(vlan_accept_double_tag_e)vlanPortAcptDoubleTagInfo.acceptDoubleTag;
     return ret;
 }
-static wtswitch_t rtk9071_switch =
+static switch_ops_t rtk9071_switch =
 {
     .sdk_init = rtk9071_sdk_init,
     .sdk_deinit = rtk9071_sdk_deinit,
@@ -873,4 +873,14 @@ static wtswitch_t rtk9071_switch =
     .l2_multi_add = rtk9071_l2_multi_add,
     .l2_entry_del = rtk9071_l2_del,
     .l2_learn_enable = rtk9071_l2_learn_enable,
+};
+static int rtl9071_probe(struct hw_device *dev)
+{
+    printf("rtl9071 probe\n");
+    return 0;
+}
+struct hw_driver driver_rtl9071 = {
+    .name = "libbsp,rtl9071",
+    .probe = rtl9071_probe,
+    .ops = &rtk9071_switch,
 };

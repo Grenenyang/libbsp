@@ -1,3 +1,3 @@
-CONFIG_JSON_PATH="/etc/libbsp.cfg"
+CONFIG_JSON_PATH="/data/hengyang/work/libbsp/libbsp-master/libbsp-master/configs/json/libbsp.cfg"
 CONFIG_CLASS_SWITCH=y
 CONFIG_DRIVER_RTL9071=y
