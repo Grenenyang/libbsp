@@ -300,7 +300,7 @@ static int rtk9071_sys_porting_stdlib(void)
     return ret;
 }
 /**@}*/ /* SYS_PORTING_STDLIB */
-static int rtk9071_sdk_init(void)
+static int rtk9071_sdk_init(struct hw_device *dev)
 {
     RtkApiRet ret = RT_ERR_OK;
     RegifCallback_t regifCallback = {

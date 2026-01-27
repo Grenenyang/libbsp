@@ -7,6 +7,7 @@
 #include <pthread.h>
 #include <stddef.h>
 #include <errno.h>
+#include <stdint.h>
 
 // ====================== 1. 通用基础定义 ======================
 #define HW_OK          0
@@ -18,8 +19,9 @@
 #define HW_ERR_MATCH   -6
 #define HW_ERR_SECTION -7
 
+#define DENUG 1
 // 调试宏
-#ifdef RTL_907X_D_DEV
+#ifdef DEBUG
 #define HW_DEBUG(fmt, ...) printf("[CORE][DEBUG] " fmt, ##__VA_ARGS__)
 #define HW_WARN(fmt, ...)  printf("[CORE][WARN] " fmt, ##__VA_ARGS__)
 #else
@@ -28,6 +30,9 @@
 #endif
 #define HW_INFO(fmt, ...)  printf("[CORE][INFO] " fmt, ##__VA_ARGS__)
 #define HW_ERR(fmt, ...)   printf("[CORE][ERROR] " fmt, ##__VA_ARGS__)
+#define HW_WARN(fmt, ...)  printf("[CORE][WARN] " fmt, ##__VA_ARGS__)
+
+
 
 // ====================== 2. 通用链表操作（修复初始化逻辑） ======================
 typedef struct hw_list_node {
@@ -105,11 +110,9 @@ struct hw_class;
 
 typedef struct hw_driver {
     char *name;
-    char *compatible;
     int (*probe)(struct hw_device *dev);
     int (*remove)(struct hw_device *dev);
     void *ops;
-    void *priv;
     hw_list_node_t node;
 } hw_driver_t;
 
@@ -132,6 +135,40 @@ typedef struct hw_class {
     int drv_count;
     void *priv;
 } hw_class_t;
+
+
+typedef uintptr_t handle_t;
+// ====================== 内部配置（不对外暴露） ======================
+#define BSP_MAX_DEVICE_ID    1023    // 最大设备ID（内部限定）
+#define BSP_INVALID_HANDLE   ((handle_t)-1)  // 无效句柄（内部使用）
+#define BSP_NULL_HANDLE      ((handle_t)NULL) // 空句柄（内部使用）
+
+// ====================== 内部核心宏（不对外暴露） ======================
+/**
+ * @brief 内部：判断handle_t是否为整数ID形态
+ * @param h 输入的handle_t句柄
+ * @return 1：是ID；0：是指针/无效句柄
+ */
+#define __IS_HANDLE(h)                                                    \
+    ({                                                                   \
+        handle_t _h = (h);                                               \
+        (_h >= 0 && _h <= BSP_MAX_DEVICE_ID) ? 1 : 0;                    \
+    })
+
+/**
+ * @brief 内部：将handle_t（指针形态）转为device指针
+ * @param h 输入的handle_t句柄
+ * @return 设备指针；非指针形态返回NULL
+ */
+#define __HANDLE_TO_DEV(h)                                                \
+    ({                                                                   \
+        struct device* _dev = NULL;                                      \
+        handle_t _h = (h);                                               \
+        if (_h != BSP_INVALID_HANDLE && _h != BSP_NULL_HANDLE && !__IS_HANDLE(_h)) { \
+            _dev = (struct hw_device*)(_h);                                 \
+        }                                                                \
+        _dev;                                                            \
+    })
 
 
 // ====================== 6. 核心接口声明 ======================

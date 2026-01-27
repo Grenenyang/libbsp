@@ -70,7 +70,7 @@ typedef enum
 } vlan_accept_double_tag_e;
 typedef struct switch_ops
 {
-    int (*sdk_init)(void);
+    int (*sdk_init)(struct hw_device *device);
     int (*sdk_deinit)(void);
 
     //port
