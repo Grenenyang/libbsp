@@ -9,16 +9,6 @@
 #include <errno.h>
 #include <stdint.h>
 
-// ====================== 1. 通用基础定义 ======================
-#define HW_OK          0
-#define HW_ERR_INVAL   -1
-#define HW_ERR_NOENT   -2
-#define HW_ERR_EXIST   -3
-#define HW_ERR_JSON    -4
-#define HW_ERR_LOCK    -5
-#define HW_ERR_MATCH   -6
-#define HW_ERR_SECTION -7
-
 #define DENUG 1
 // 调试宏
 #ifdef DEBUG
@@ -135,9 +125,6 @@ typedef struct hw_class {
     int drv_count;
     void *priv;
 } hw_class_t;
-
-
-typedef uintptr_t handle_t;
 // ====================== 内部配置（不对外暴露） ======================
 #define BSP_MAX_DEVICE_ID    1023    // 最大设备ID（内部限定）
 #define BSP_INVALID_HANDLE   ((handle_t)-1)  // 无效句柄（内部使用）

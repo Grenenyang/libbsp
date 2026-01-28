@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
+#include "../export.h"
 #include "../switch.h"
 #include "rtkas_api_ext.h"
 #include "rtkas_api_system.h"
@@ -43,7 +44,7 @@ UnitChip_t     g_unitChip  = {.chip = CHIP_907XC_VB, .unit = 1u};
 static int cvb_spi_flash_update_image(UnitChip_t unitChip,const char *image_path) {
     // 临时实现（根据实际逻辑补充）
     HW_INFO("cvb_spi_flash_update_image: dummy implementation\n");
-    return HW_OK;
+    return 0;
 }
 
 typedef struct

@@ -4,6 +4,7 @@
 #include "autoconf.h"
 #include "wt_tools_class.h"
 #include "wt_tools_driver.h"
+#include "export.h"
 // ====================== 全局变量 ======================
 pthread_mutex_t hw_module_lock = PTHREAD_MUTEX_INITIALIZER;
 // ====================== Class 接口实现（修复链表初始化） ======================
@@ -12,7 +13,7 @@ int hw_class_init(hw_class_t *cls, const char *name)
     if (cls == NULL || name == NULL)
     {
         HW_ERR("hw_class_init: invalid param (cls=%p, name=%s)\n", cls, name);
-        return HW_ERR_INVAL;
+        return -1;
     }
 
     // 初始化基础字段
@@ -20,7 +21,7 @@ int hw_class_init(hw_class_t *cls, const char *name)
     cls->name = strdup(name);
     if (cls->name == NULL) {
         HW_ERR("hw_class_init: strdup failed (errno=%d)\n", errno);
-        return HW_ERR_INVAL;
+        return -1;
     }
 
     // 修复：使用函数初始化链表（替代原宏）
@@ -32,13 +33,13 @@ int hw_class_init(hw_class_t *cls, const char *name)
     {
         HW_ERR("hw_class_init: mutex init failed (errno=%d)\n", errno);
         free(cls->name);
-        return HW_ERR_LOCK;
+        return -1;
     }
 
     cls->dev_count = 0;
     cls->drv_count = 0;
     HW_INFO("Class %s(%p) init success\n", name,cls);
-    return HW_OK;
+    return 0;
 }
 
 void hw_class_deinit(hw_class_t *cls) {
@@ -48,16 +49,9 @@ void hw_class_deinit(hw_class_t *cls) {
 
     // 注销所有驱动
     hw_driver_unregister_all_from_class(cls);
-    // 解绑所有设备
+    // 解绑删除所有设备
     hw_device_driver_unbind_all(cls);
 
-    // 释放名称
-    if (cls->name) {
-        free(cls->name);
-        cls->name = NULL;
-    }
-
-    // 销毁锁
     pthread_mutex_destroy(&cls->lock);
 
     HW_INFO("Class %s deinit success\n", cls->name);
@@ -68,7 +62,7 @@ int hw_class_get_drv_count(hw_class_t *cls)
     return (cls != NULL) ? cls->drv_count : 0;
 }
 
-int hw_class_get_dev_count(hw_class_t *cls) 
+int hw_class_get_dev_count(hw_class_t *cls)
 {
     return (cls != NULL) ? cls->dev_count : 0;
 }
@@ -77,7 +71,7 @@ int hw_class_get_dev_count(hw_class_t *cls)
 int hw_driver_register(hw_class_t *cls, hw_driver_t *drv) {
     if (cls == NULL || drv == NULL || drv->name == NULL) {
         HW_ERR("hw_driver_register: invalid param (cls=%p, drv=%p)\n", cls, drv);
-        return HW_ERR_INVAL;
+        return -1;
     }
 
     pthread_mutex_lock(&cls->lock);
@@ -89,11 +83,10 @@ int hw_driver_register(hw_class_t *cls, hw_driver_t *drv) {
             HW_ERR("hw_driver_register: driver %s already exist in class %s\n",
                    drv->name, cls->name);
             pthread_mutex_unlock(&cls->lock);
-            return HW_ERR_EXIST;
+            return -1;
         }
     }
 
-    // 初始化驱动节点，尾插法添加到链表
     hw_list_head_init(&drv->node);
     hw_list_add_tail(&drv->node, &cls->drv_list);
     cls->drv_count++;
@@ -102,7 +95,7 @@ int hw_driver_register(hw_class_t *cls, hw_driver_t *drv) {
 
     HW_INFO("Driver %s register to class %s success (total drv: %d)\n",
             drv->name, cls->name, cls->drv_count);
-    return HW_OK;
+    return 0;
 }
 
 void hw_driver_unregister(hw_class_t *cls, hw_driver_t *drv) {
@@ -147,7 +140,7 @@ void hw_driver_unregister_all_from_class(hw_class_t *cls) {
 int hw_device_add(hw_class_t *cls, hw_device_t *dev) {
     if (cls == NULL || dev == NULL || dev->name == NULL) {
         HW_ERR("hw_device_add: invalid param (cls=%p, dev=%p)\n", cls, dev);
-        return HW_ERR_INVAL;
+        return -1;
     }
 
     pthread_mutex_lock(&cls->lock);
@@ -159,7 +152,7 @@ int hw_device_add(hw_class_t *cls, hw_device_t *dev) {
             HW_ERR("hw_device_add: device %s already exist in class %s\n",
                    dev->name, cls->name);
             pthread_mutex_unlock(&cls->lock);
-            return HW_ERR_EXIST;
+            return -1;
         }
     }
 
@@ -174,9 +167,8 @@ int hw_device_add(hw_class_t *cls, hw_device_t *dev) {
 
     HW_INFO("Device(%p) %s add to class %s success (total dev: %d)\n",
             dev, dev->name, cls->name, cls->dev_count);
-    return HW_OK;
+    return 0;
 }
-#if 0
 void hw_device_remove(hw_class_t *cls, hw_device_t *dev) {
     if (cls == NULL || dev == NULL) return;
 
@@ -184,8 +176,9 @@ void hw_device_remove(hw_class_t *cls, hw_device_t *dev) {
 
     // 解绑驱动
     if (dev->drv) {
-        if (dev->drv->ops && dev->drv->ops->remove) {
-            dev->drv->ops->remove(dev);
+        if (dev->drv && dev->drv->remove)
+        {
+            dev->drv->remove(dev);
         }
         dev->drv = NULL;
     }
@@ -198,13 +191,12 @@ void hw_device_remove(hw_class_t *cls, hw_device_t *dev) {
 
     HW_INFO("Device %s remove from class %s success\n", dev->name, cls->name);
 }
-#endif
 int hw_device_driver_match(hw_class_t *cls)
 {
     if (cls == NULL)
     {
         HW_ERR("hw_device_driver_match: invalid class (cls=%p)\n", cls);
-        return HW_ERR_INVAL;
+        return -1;
     }
 
     pthread_mutex_lock(&cls->lock);
@@ -234,7 +226,7 @@ int hw_device_driver_match(hw_class_t *cls)
                 if (drv && drv->probe)
                 {
                     int ret = drv->probe(dev);
-                    if (ret != HW_OK)
+                    if (ret != 0)
                     {
                         HW_ERR("Device %s probe failed (driver: %s, ret=%d)\n",
                                dev->name, drv->name, ret);
@@ -260,28 +252,33 @@ int hw_device_driver_match(hw_class_t *cls)
 
     if (match_count == 0) {
         HW_ERR("No device-driver match in class %s\n", cls->name);
-        return HW_ERR_MATCH;
+        return -1;
     }
 
     HW_INFO("Class %s device-driver match success (matched: %d/%d)\n",
             cls->name, match_count, cls->dev_count);
-    return HW_OK;
+    return 0;
 }
 void hw_device_driver_unbind_all(hw_class_t *cls) {
     if (cls == NULL) return;
 
     pthread_mutex_lock(&cls->lock);
 
-    hw_device_t *dev;
-    hw_list_for_each_entry(dev, &cls->dev_list, node) {
+    hw_device_t *dev, *tmp;
+    hw_list_for_each_entry_safe(dev,tmp, &cls->dev_list, node)
+    {
         if (dev->drv && dev->drv->remove)
         {
             dev->drv->remove(dev);
             dev->drv = NULL;
             HW_INFO("Device %s unbind driver success\n", dev->name);
         }
+        hw_device_remove(cls,dev);
+        if(dev)
+        {
+            free(dev);
+        }
     }
-
     pthread_mutex_unlock(&cls->lock);
 }
 /**
@@ -412,7 +409,7 @@ static int parse_device(cJSON *root_node,struct hw_class *cls)
         dev->name = strdup(child->string);
         if (dev->name == NULL) {
             HW_ERR("%s: strdup failed (errno=%d)\n",__FUNCTION__, errno);
-            return HW_ERR_INVAL;
+            return -1;
         }
         dev->root = child;
         hw_device_add(cls,dev);
@@ -470,7 +467,7 @@ int _bsp_device_get(struct hw_class *cls,struct hw_device **out_dev , int id)
     return -1;
 }
 
-int wt_tools_init()
+int bsp_init()
 {
     long file_len = 0;
     char *json_buf = read_file_to_buf(CONFIG_JSON_PATH, &file_len);
@@ -488,6 +485,15 @@ int wt_tools_init()
         return -1;
     }
     parse_all_class(root_node);
+    cJSON_Delete(root_node);
+    return 0;
+}
 
+int bsp_deinit()
+{
+    for (int i = 0; generate_class_list[i] != NULL; i++)
+    {
+        hw_class_deinit(generate_class_list[i]);
+    }
     return 0;
 }

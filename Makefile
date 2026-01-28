@@ -4,7 +4,7 @@ export PRJ_BUILD_ROOT := $(PRJ_ROOT)/output
 export CROSS_COMPILE ?= $(CONFIG_CROSS_PREFIX:%=%)
 $(info CROSS_COMPILE=$(CROSS_COMPILE))
 
-all: $(addprefix $(PRJ_BUILD_ROOT)/,libwttools.so wt_tools)
+all: $(addprefix $(PRJ_BUILD_ROOT)/,libwttools.so)
 
 # rules for config
 menuconfig: $(PRJ_ROOT)/build/bin/mconf
@@ -46,13 +46,13 @@ generate:
 	$(PRJ_ROOT)/build/script/generate_class_h.sh  -c $(PRJ_BUILD_ROOT)/.config -o  $(PRJ_BUILD_ROOT)/include/generated/wt_tools_class.h -t "struct hw_class"
 	@echo $(PRJ_BUILD_ROOT)/include/generated/wt_tools_class.h has been built!
 	$(PRJ_ROOT)/build/script/generate_driver_h.sh  -c $(PRJ_BUILD_ROOT)/.config -o  $(PRJ_BUILD_ROOT)/include/generated/wt_tools_driver.h -t "struct hw_driver"
-	 @echo $(PRJ_BUILD_ROOT)/include/generated/wt_tools_driver.h has been built!
+	@echo $(PRJ_BUILD_ROOT)/include/generated/wt_tools_driver.h has been built!
+	PRJ_ROOT=$(PRJ_ROOT) PRJ_BUILD_ROOT=$(PRJ_BUILD_ROOT) $(PRJ_ROOT)/build/script/export_header.sh
 
-$(PRJ_BUILD_ROOT)/libwttools.so: generate  $(PRJ_BUILD_ROOT)/usource/built-in.o 
+$(PRJ_BUILD_ROOT)/libwttools.so: $(PRJ_BUILD_ROOT)/usource/built-in.o 
 	$(CROSS_COMPILE)gcc $(TARGET_LIB_LFLAGS) -o $@ $(PRJ_BUILD_ROOT)/usource/built-in.o -lm
 	mkdir -p $(PRJ_BUILD_ROOT)/strip
 	$(CROSS_COMPILE)strip $@ -o $(PRJ_BUILD_ROOT)/strip/libupdate.so
-	@cp $(PRJ_ROOT)/unpack/update.h $(PRJ_BUILD_ROOT)/update.h
 	@echo $(PRJ_BUILD_ROOT)/libupdate.so has been built!
 
 TARGET_MAIN_LFLAGS  = -lm -ldl -lpthread -L$(PRJ_BUILD_ROOT) -lupdate
@@ -83,12 +83,12 @@ $(HOST_OBJS): $(PRJ_BUILD_ROOT)/%.o:%.c
 	gcc $(HOST_CFLAGS) -c $^ -o $@
 
 obj-y += usource/
-$(PRJ_BUILD_ROOT)/usource/built-in.o:build_all
+$(PRJ_BUILD_ROOT)/usource/built-in.o: build_all
 
-build_all:
+build_all:generate
 	make -f $(PRJ_ROOT)/build/Makefile.build
 
 clean:
 	rm -rf $(PRJ_BUILD_ROOT)
 
-.PHONY: all clean menuconfig savedefconfig %_defconfig
+.PHONY: all clean menuconfig savedefconfig %_defconfig generate
