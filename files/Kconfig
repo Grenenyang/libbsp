@@ -1,0 +1,11 @@
+mainmenu "WT eth tool Build Configuration"
+
+config JSON_PATH
+     string "build json config path"
+     default ""
+     help
+         "libbsp config file"
+
+source "$(PRJ_ROOT)/usource/Kconfig"
+
+source "$(PRJ_ROOT)/ksource/Kconfig"

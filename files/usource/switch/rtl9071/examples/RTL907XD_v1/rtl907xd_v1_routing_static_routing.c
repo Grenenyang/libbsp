@@ -1,0 +1,853 @@
+/*
+ * SPDX-License-Identifier: LicenseRef-Realtek-Proprietary
+ *
+ * Copyright (c) 2024, Realtek Semiconductor Corp. All rights reserved.
+ *
+ * This software is a confidential and proprietary property of Realtek
+ * Semiconductor Corp. Disclosure, reproduction, redistribution, in
+ * whole or in part, of this work and its derivatives without express
+ * permission is prohibited.
+ *
+ * Realtek Semiconductor Corp. reserves the right to update, modify, or
+ * discontinue this software at any time without notice. This software is
+ * provided "as is" and any express or implied warranties, including, but
+ * not limited to, the implied warranties of merchantability and fitness for
+ * a particular purpose are disclaimed. In no event shall Realtek
+ * Semiconductor Corp. be liable for any direct, indirect, incidental,
+ * special, exemplary, or consequential damages (including, but not limited
+ * to, procurement of substitute goods or services; loss of use, data, or
+ * profits; or business interruption) however caused and on any theory of
+ * liability, whether in contract, strict liability, or tort (including
+ * negligence or otherwise) arising in any way out of the use of this software,
+ * even if advised of the possibility of such damage.
+ */
+
+#include "rtkas_api_ext.h"
+#include "rtkas_api_l2.h"
+#include "rtkas_api_routing.h"
+
+/** @addtogroup EXAMPLE
+ *  @{
+ */
+
+/** @addtogroup RT_EXAMPLE
+ *  @{
+ */
+
+/** @addtogroup DV1_RT_EXAMPLE
+ *  @{
+ */
+
+/** @addtogroup DV1_RT_EXAMPLE_RT
+ *  @{
+ */
+
+/** @defgroup DV1_RT_EXAMPLE_STATIC Static Routing
+ * @brief This example demonstrates how to configure static routing.
+ * @image html routing/static_routing.jpg
+ *
+ * @section Purpose
+ * To demonstrate how to use APIs to configure Static Routing.
+ * @section Description
+ * Host A and Host B are in different subnets. If they want to send packets with specific DIP / SIP to each other, they must establish a routing entry and transform the L2 header across the different LANs. \n
+ *      In order to communicate between different hosts on different LANs, several routing rules and router interfaces need to be configured. In the above case, two interfaces need to be configured, and each interface shall have a corresponding routing rule. \n
+ * This example will be configured by following these steps:
+ * 1. Disable & initialize the routing function
+ * 2. Set VLANs
+ * 3. Set static MACs for routing
+ * 4. Set interfaces
+ * 5. Set static unicast & multicast rules
+ * 6. Enable routing
+ *
+ *  @{
+ */
+
+#define VLAN10 (10u)
+#define VLAN20 (20u)
+#define VLAN30 (30u)
+
+/* Declaration */
+RtkApiRet        dv1_routing_static_routing(void);
+static RtkApiRet dv1_static_routing_table_dump(void);
+
+/* Function */
+RtkApiRet dv1_routing_static_routing(void)
+{
+    RtkApiRet           ret                      = RT_ERR_OK;
+    RtkApiRet           lukRet                   = RT_ERR_OK;
+    UnitChip_t          unitChip                 = {DV1_UNIT, CHIP_907XD_V1};
+    VlanInfo_t          vlanInfo                 = {0};
+    const uint8         dstNodeMac[MAC_ADDR_LEN] = {0x00u, 0x00u, 0x00u, 0x00u, 0x02u, 0x02u};
+    LutUniAddInfo_t     lutUniAddInfo            = {0};
+    LutSearchInfo_t     lutSearchInfo            = {0};
+    RtEnable_t          enable                   = {0};
+    RtIntfCfg_t         intfCfg                  = {0};
+    RtTableSearchInfo_t searchInfo               = {0};
+    RtUcEntry_t         ucEntry                  = {0};
+    RtMcEntry_t         mcEntry                  = {0};
+    RtIntfCfg_t         intfCfgGet               = {0};
+    RtUcEntry_t         ucEntryGet               = {0};
+    RtMcEntry_t         mcEntryGet               = {0};
+
+    /* Disable Routing */
+    enable.enable = DISABLED;
+    CHK_FUN_RET(ret, rtk_route_enable(unitChip, &enable));
+
+    /* Clear routing tables */
+    CHK_FUN_RET(ret, rtk_route_tbl_flush(unitChip));
+
+    /* Initialize VLAN */
+    CHK_FUN_RET(ret, rtk_vlan_init(unitChip));
+
+    /*
+    All the ports are in the default VLAN 1 after VLAN is initialized.
+    Modify it as follows:
+    VLAN10 member: 1st port, 3rd port
+    VLAN20 member: 2nd port, 4th port
+    VLAN30 member: 2nd port, 5th port
+    */
+    CHK_FUN_RET(ret, drv_memset(&vlanInfo, 0, sizeof(vlanInfo)));
+    vlanInfo.vid                      = VLAN10;
+    vlanInfo.vlanEntry.mbrMsk         = DV1_RTK_USER_PMAP_1ST | DV1_RTK_USER_PMAP_3RD; /* 1st port, 3rd port */
+    vlanInfo.vlanEntry.utagMsk        = 0u;
+    vlanInfo.vlanEntry.fid            = 0u;
+    vlanInfo.vlanEntry.ulfid          = EM_VLAN_SVL;
+    vlanInfo.vlanEntry.vbfwd          = EM_ALE_BASED_FWD;
+    vlanInfo.vlanEntry.interfaceId    = 0u;
+    vlanInfo.vlanEntry.interfaceValid = 0u;
+    CHK_FUN_RET(ret, rtk_vlan_set(unitChip, &vlanInfo));
+    /* Expected Behaviour: The frames with vid 10 will be flooded to 1st port/3rd port port. */
+
+    CHK_FUN_RET(ret, drv_memset(&vlanInfo, 0, sizeof(vlanInfo)));
+    vlanInfo.vid                      = VLAN20;
+    vlanInfo.vlanEntry.mbrMsk         = DV1_RTK_USER_PMAP_2ND | DV1_RTK_USER_PMAP_4TH; /* 2nd port, 4th port */
+    vlanInfo.vlanEntry.utagMsk        = 0u;
+    vlanInfo.vlanEntry.fid            = 0u;
+    vlanInfo.vlanEntry.ulfid          = EM_VLAN_SVL;
+    vlanInfo.vlanEntry.vbfwd          = EM_ALE_BASED_FWD;
+    vlanInfo.vlanEntry.interfaceId    = 0u;
+    vlanInfo.vlanEntry.interfaceValid = 0u;
+    CHK_FUN_RET(ret, rtk_vlan_set(unitChip, &vlanInfo));
+    /* Expected Behaviour: The frames with vid 20 will be flooded to 2nd port/4th port. */
+
+    CHK_FUN_RET(ret, drv_memset(&vlanInfo, 0, sizeof(vlanInfo)));
+    vlanInfo.vid                      = VLAN30;
+    vlanInfo.vlanEntry.mbrMsk         = DV1_RTK_USER_PMAP_2ND | DV1_RTK_USER_PMAP_5TH; /* 2nd port, 5th port */
+    vlanInfo.vlanEntry.utagMsk        = 0u;
+    vlanInfo.vlanEntry.fid            = 0u;
+    vlanInfo.vlanEntry.ulfid          = EM_VLAN_SVL;
+    vlanInfo.vlanEntry.vbfwd          = EM_ALE_BASED_FWD;
+    vlanInfo.vlanEntry.interfaceId    = 0u;
+    vlanInfo.vlanEntry.interfaceValid = 0u;
+    CHK_FUN_RET(ret, rtk_vlan_set(unitChip, &vlanInfo));
+    /* Expected Behaviour: The frames with vid 30 will be flooded to 2nd port/5th port. */
+
+    /* Add unicast L2 entries */
+    CHK_FUN_RET(ret, drv_memcpy(lutUniAddInfo.mac, dstNodeMac, MAC_ADDR_LEN));
+    lutUniAddInfo.vid   = VLAN20;
+    lutUniAddInfo.port  = DV1_RTK_USER_PORT_2ND;
+    lutUniAddInfo.fid   = 0u;
+    lutUniAddInfo.ulfid = ENABLED;
+    CHK_FUN_RET(ret, rtk_lut_uni_entry_add(unitChip, &lutUniAddInfo));
+    /* Get corresponding L2 index */
+    CHK_FUN_RET(ret, drv_memcpy(lutSearchInfo.macAddr, dstNodeMac, MAC_ADDR_LEN));
+    CHK_FUN_RET(ret, rtk_lut_entry_search(unitChip, &lutSearchInfo));
+    /* Expected Behaviour: The MAC address will be stored in L2 table and we can get its index. */
+
+    /**
+     *
+     * Configure IPv4 routing
+     *
+     */
+
+    /* Set interface 0 */
+    CHK_FUN_RET(ret, drv_memset(&intfCfg, 0, sizeof(intfCfg)));
+    intfCfg.intfEntry.index      = 0u;
+    intfCfg.intfEntry.valid      = ENABLED;
+    intfCfg.intfEntry.intfFidVid = VLAN10;
+    intfCfg.intfEntry.portId     = DV1_RTK_USER_PORT_1ST;
+    intfCfg.intfEntry.ipVer      = IP4_VER;
+    intfCfg.intfEntry.gwIp[0]    = 192u;
+    intfCfg.intfEntry.gwIp[1]    = 168u;
+    intfCfg.intfEntry.gwIp[2]    = 1u;
+    intfCfg.intfEntry.gwIp[3]    = 254u;
+    intfCfg.intfEntry.mac[1]     = 0xe0u;
+    intfCfg.intfEntry.mac[2]     = 0x4cu;
+    intfCfg.intfEntry.mac[5]     = 0x01u;
+    CHK_FUN_RET(ret, rtk_route_intf_set(unitChip, &intfCfg));
+
+    /* Get interface 0 */
+    CHK_FUN_RET(ret, drv_memset(&intfCfgGet, 0, sizeof(intfCfgGet)));
+    intfCfgGet.intfEntry.index = intfCfg.intfEntry.index;
+    CHK_FUN_RET(ret, rtk_route_intf_get(unitChip, &intfCfgGet));
+
+    if(0 == rtl_memcmp(&intfCfgGet, &intfCfg, sizeof(intfCfg)))
+    {
+        (void)rtlglue_printf("Set interface %d successfully\n", intfCfgGet.intfEntry.index);
+    }
+
+    /* Set interface 1 */
+    CHK_FUN_RET(ret, drv_memset(&intfCfg, 0, sizeof(intfCfg)));
+    intfCfg.intfEntry.index      = 1u;
+    intfCfg.intfEntry.valid      = ENABLED;
+    intfCfg.intfEntry.intfFidVid = VLAN20;
+    intfCfg.intfEntry.portId     = DV1_RTK_USER_PORT_2ND;
+    intfCfg.intfEntry.ipVer      = IP4_VER;
+    intfCfg.intfEntry.gwIp[0]    = 192u;
+    intfCfg.intfEntry.gwIp[1]    = 168u;
+    intfCfg.intfEntry.gwIp[2]    = 2u;
+    intfCfg.intfEntry.gwIp[3]    = 254u;
+    intfCfg.intfEntry.mac[1]     = 0xe0u;
+    intfCfg.intfEntry.mac[2]     = 0x4cu;
+    intfCfg.intfEntry.mac[5]     = 0x01u;
+    CHK_FUN_RET(ret, rtk_route_intf_set(unitChip, &intfCfg));
+
+    /* Get interface 1 */
+    CHK_FUN_RET(ret, drv_memset(&intfCfgGet, 0, sizeof(intfCfgGet)));
+    intfCfgGet.intfEntry.index = intfCfg.intfEntry.index;
+    CHK_FUN_RET(ret, rtk_route_intf_get(unitChip, &intfCfgGet));
+
+    if(0 == rtl_memcmp(&intfCfgGet, &intfCfg, sizeof(intfCfg)))
+    {
+        (void)rtlglue_printf("Set interface %d successfully\n", intfCfgGet.intfEntry.index);
+    }
+
+    /* Set interface 2 */
+    CHK_FUN_RET(ret, drv_memset(&intfCfg, 0, sizeof(intfCfg)));
+    intfCfg.intfEntry.index      = 2u;
+    intfCfg.intfEntry.valid      = ENABLED;
+    intfCfg.intfEntry.intfFidVid = VLAN30;
+    intfCfg.intfEntry.portId     = DV1_RTK_USER_PORT_2ND;
+    intfCfg.intfEntry.ipVer      = IP4_VER;
+    intfCfg.intfEntry.gwIp[0]    = 192u;
+    intfCfg.intfEntry.gwIp[1]    = 168u;
+    intfCfg.intfEntry.gwIp[2]    = 3u;
+    intfCfg.intfEntry.gwIp[3]    = 254u;
+    intfCfg.intfEntry.mac[1]     = 0xe0u;
+    intfCfg.intfEntry.mac[2]     = 0x4cu;
+    intfCfg.intfEntry.mac[5]     = 0x01u;
+    CHK_FUN_RET(ret, rtk_route_intf_set(unitChip, &intfCfg));
+
+    /* Get interface 2 */
+    CHK_FUN_RET(ret, drv_memset(&intfCfgGet, 0, sizeof(intfCfgGet)));
+    intfCfgGet.intfEntry.index = intfCfg.intfEntry.index;
+    CHK_FUN_RET(ret, rtk_route_intf_get(unitChip, &intfCfgGet));
+
+    if(0 == rtl_memcmp(&intfCfgGet, &intfCfg, sizeof(intfCfg)))
+    {
+        (void)rtlglue_printf("Set interface %d successfully\n", intfCfgGet.intfEntry.index);
+    }
+
+    /* Lookup IPv4 unicast */
+    CHK_FUN_RET(ret, drv_memset(&searchInfo, 0, sizeof(searchInfo)));
+    searchInfo.luKey.dip[0]    = 192u;
+    searchInfo.luKey.dip[1]    = 168u;
+    searchInfo.luKey.dip[2]    = 2u;
+    searchInfo.luKey.dip[3]    = 2u;
+    searchInfo.luKey.entryType = EM_RT_UC4;
+    lukRet                     = rtk_route_tbl_lookup(unitChip, &searchInfo);
+
+    if((-RT_ERR_ROUTE_ENTRY_NOT_FOUND == lukRet) && (RT_TBL_INVALID_IDX != searchInfo.availIdx))
+    {
+        /* If lookup miss, check if an available entry exist */
+        if(EM_HOST_TBL == searchInfo.availTblType)
+        {
+            /* The available entry is in host table, then set the unicast entry into the available entry */
+            CHK_FUN_RET(ret, drv_memset(&ucEntry, 0, sizeof(ucEntry)));
+            CHK_FUN_RET(ret, drv_memcpy(&ucEntry.hostLuKey, &searchInfo.luKey, sizeof(RtlookUpKey_t)));
+            ucEntry.tblInfo.tblType  = searchInfo.availTblType;
+            ucEntry.tblInfo.index    = searchInfo.availIdx;
+            ucEntry.tblInfo.entryIdx = searchInfo.availEntryIdx;
+            ucEntry.valid            = ENABLED;
+            ucEntry.ttl              = ENABLED;
+            ucEntry.egrIfIdx         = 1u;
+            ucEntry.l2Idx            = lutSearchInfo.lutEntry.index;
+            CHK_FUN_RET(ret, rtk_route_uc_set(unitChip, &ucEntry));
+
+            /* Get the unicast entry */
+            CHK_FUN_RET(ret, drv_memset(&ucEntryGet, 0, sizeof(ucEntryGet)));
+            ucEntryGet.tblInfo.tblType     = ucEntry.tblInfo.tblType;
+            ucEntryGet.tblInfo.index       = ucEntry.tblInfo.index;
+            ucEntryGet.tblInfo.entryIdx    = ucEntry.tblInfo.entryIdx;
+            ucEntryGet.hostLuKey.entryType = ucEntry.hostLuKey.entryType;
+            CHK_FUN_RET(ret, rtk_route_uc_get(unitChip, &ucEntryGet));
+
+            if(0 == rtl_memcmp(&ucEntryGet, &ucEntry, sizeof(ucEntry)))
+            {
+                (void)rtlglue_printf("Set IPv4 unicast entry successfully\n");
+            }
+        }
+        else if(EM_NET_TBL == searchInfo.availTblType)
+        {
+            /* The available entry is in network table, then set the unicast entry into the available entry */
+            CHK_FUN_RET(ret, drv_memset(&ucEntry, 0, sizeof(ucEntry)));
+            CHK_FUN_RET(ret, drv_memcpy(&ucEntry.netLuKey, &searchInfo.luKey, sizeof(RtlookUpKey_t)));
+            CHK_FUN_RET(ret, drv_memset(ucEntry.netLuKey.dipCare, 0xff, IPV4_ADDR_LEN));
+            ucEntry.netLuKey.typeCare = ENABLED;
+            ucEntry.tblInfo.tblType   = searchInfo.availTblType;
+            ucEntry.tblInfo.index     = searchInfo.availIdx;
+            ucEntry.valid             = ENABLED;
+            ucEntry.ttl               = ENABLED;
+            ucEntry.egrIfIdx          = 1u;
+            ucEntry.l2Idx             = lutSearchInfo.lutEntry.index;
+            CHK_FUN_RET(ret, rtk_route_uc_set(unitChip, &ucEntry));
+
+            /* Get the unicast entry */
+            CHK_FUN_RET(ret, drv_memset(&ucEntryGet, 0, sizeof(ucEntryGet)));
+            ucEntryGet.tblInfo.tblType    = ucEntry.tblInfo.tblType;
+            ucEntryGet.tblInfo.index      = ucEntry.tblInfo.index;
+            ucEntryGet.tblInfo.entryIdx   = ucEntry.tblInfo.entryIdx;
+            ucEntryGet.netLuKey.entryType = ucEntry.netLuKey.entryType;
+            CHK_FUN_RET(ret, rtk_route_uc_get(unitChip, &ucEntryGet));
+
+            if(0 == rtl_memcmp(&ucEntryGet, &ucEntry, sizeof(ucEntry)))
+            {
+                (void)rtlglue_printf("Set IPv4 unicast entry successfully\n");
+            }
+        }
+        else
+        {
+            (void)rtlglue_printf("No available space to store the entry!!\n");
+        }
+    }
+
+    /* Lookup IPv4 multicast */
+    CHK_FUN_RET(ret, drv_memset(&searchInfo, 0, sizeof(searchInfo)));
+    searchInfo.luKey.dip[0]    = 224u;
+    searchInfo.luKey.dip[1]    = 1u;
+    searchInfo.luKey.dip[2]    = 2u;
+    searchInfo.luKey.dip[3]    = 3u;
+    searchInfo.luKey.sip[0]    = 192u;
+    searchInfo.luKey.sip[1]    = 168u;
+    searchInfo.luKey.sip[2]    = 1u;
+    searchInfo.luKey.sip[3]    = 1u;
+    searchInfo.luKey.entryType = EM_RT_MC4;
+    lukRet                     = rtk_route_tbl_lookup(unitChip, &searchInfo);
+
+    /* If lookup miss, then check available entry infomation */
+    if((-RT_ERR_ROUTE_ENTRY_NOT_FOUND == lukRet) && (RT_TBL_INVALID_IDX != searchInfo.availIdx))
+    {
+        /* An available entry exists */
+        if((EM_HOST_TBL == searchInfo.availTblType) || (EM_MCCOL_TBL == searchInfo.availTblType))
+        {
+            /* Set the multicast entry */
+            CHK_FUN_RET(ret, drv_memset(&mcEntry, 0, sizeof(mcEntry)));
+            CHK_FUN_RET(ret, drv_memcpy(&mcEntry.luKey, &searchInfo.luKey, sizeof(RtlookUpKey_t)));
+            mcEntry.tblInfo.tblType  = searchInfo.availTblType;
+            mcEntry.tblInfo.index    = searchInfo.availIdx;
+            mcEntry.tblInfo.entryIdx = searchInfo.availEntryIdx;
+            mcEntry.valid            = ENABLED;
+            mcEntry.ttl              = ENABLED;
+            mcEntry.dpm              = DV1_RTK_USER_PMAP_2ND;
+            mcEntry.nextHopIf[0]     = 0x6u; /* set egress intetface ID - 1, 2 */
+            CHK_FUN_RET(ret, rtk_route_mc_set(unitChip, &mcEntry));
+
+            /* Get the multicast entry */
+            CHK_FUN_RET(ret, drv_memset(&mcEntryGet, 0, sizeof(mcEntryGet)));
+            mcEntryGet.tblInfo.tblType  = mcEntry.tblInfo.tblType;
+            mcEntryGet.tblInfo.index    = mcEntry.tblInfo.index;
+            mcEntryGet.tblInfo.entryIdx = mcEntry.tblInfo.entryIdx;
+            mcEntryGet.luKey.entryType  = mcEntry.luKey.entryType;
+            CHK_FUN_RET(ret, rtk_route_mc_get(unitChip, &mcEntryGet));
+
+            if(0 == rtl_memcmp(&mcEntryGet, &mcEntry, sizeof(mcEntry)))
+            {
+                (void)rtlglue_printf("Set IPv4 multicast entry successfully\n");
+            }
+        }
+        else
+        {
+            (void)rtlglue_printf("No available space to store the entry!!\n");
+        }
+    }
+
+    /**
+     *
+     * Configure IPv6 routing
+     *
+     */
+
+    /* Set interface 3 */
+    CHK_FUN_RET(ret, drv_memset(&intfCfg, 0, sizeof(intfCfg)));
+    intfCfg.intfEntry.index      = 3u;
+    intfCfg.intfEntry.valid      = ENABLED;
+    intfCfg.intfEntry.intfFidVid = VLAN10;
+    intfCfg.intfEntry.portId     = DV1_RTK_USER_PORT_1ST;
+    intfCfg.intfEntry.ipVer      = IP6_VER;
+    intfCfg.intfEntry.gwIp[0]    = 0xFDu;
+    intfCfg.intfEntry.gwIp[1]    = 0x53u;
+    intfCfg.intfEntry.gwIp[2]    = 0x7Cu;
+    intfCfg.intfEntry.gwIp[3]    = 0xB8u;
+    intfCfg.intfEntry.gwIp[4]    = 0x03u;
+    intfCfg.intfEntry.gwIp[5]    = 0x83u;
+    intfCfg.intfEntry.gwIp[7]    = 0x01u;
+    intfCfg.intfEntry.gwIp[14]   = 0xFFu;
+    intfCfg.intfEntry.gwIp[15]   = 0xFEu;
+    intfCfg.intfEntry.mac[1]     = 0xe0u;
+    intfCfg.intfEntry.mac[2]     = 0x4cu;
+    intfCfg.intfEntry.mac[5]     = 0x01u;
+    CHK_FUN_RET(ret, rtk_route_intf_set(unitChip, &intfCfg));
+
+    /* Get interface 3 */
+    CHK_FUN_RET(ret, drv_memset(&intfCfgGet, 0, sizeof(intfCfgGet)));
+    intfCfgGet.intfEntry.index = intfCfg.intfEntry.index;
+    CHK_FUN_RET(ret, rtk_route_intf_get(unitChip, &intfCfgGet));
+
+    if(0 == rtl_memcmp(&intfCfgGet, &intfCfg, sizeof(intfCfg)))
+    {
+        (void)rtlglue_printf("Set interface %d successfully\n", intfCfgGet.intfEntry.index);
+    }
+
+    /* Set interface 4 */
+    CHK_FUN_RET(ret, drv_memset(&intfCfg, 0, sizeof(intfCfg)));
+    intfCfg.intfEntry.index      = 4u;
+    intfCfg.intfEntry.valid      = ENABLED;
+    intfCfg.intfEntry.intfFidVid = VLAN20;
+    intfCfg.intfEntry.portId     = DV1_RTK_USER_PORT_2ND;
+    intfCfg.intfEntry.ipVer      = IP6_VER;
+    intfCfg.intfEntry.gwIp[0]    = 0xFDu;
+    intfCfg.intfEntry.gwIp[1]    = 0x53u;
+    intfCfg.intfEntry.gwIp[2]    = 0x7Cu;
+    intfCfg.intfEntry.gwIp[3]    = 0xB8u;
+    intfCfg.intfEntry.gwIp[4]    = 0x03u;
+    intfCfg.intfEntry.gwIp[5]    = 0x83u;
+    intfCfg.intfEntry.gwIp[7]    = 0x02u;
+    intfCfg.intfEntry.gwIp[14]   = 0xFFu;
+    intfCfg.intfEntry.gwIp[15]   = 0xFEu;
+    intfCfg.intfEntry.mac[1]     = 0xe0u;
+    intfCfg.intfEntry.mac[2]     = 0x4cu;
+    intfCfg.intfEntry.mac[5]     = 0x01u;
+    CHK_FUN_RET(ret, rtk_route_intf_set(unitChip, &intfCfg));
+
+    /* Get interface 4 */
+    CHK_FUN_RET(ret, drv_memset(&intfCfgGet, 0, sizeof(intfCfgGet)));
+    intfCfgGet.intfEntry.index = intfCfg.intfEntry.index;
+    CHK_FUN_RET(ret, rtk_route_intf_get(unitChip, &intfCfgGet));
+
+    if(0 == rtl_memcmp(&intfCfgGet, &intfCfg, sizeof(intfCfg)))
+    {
+        (void)rtlglue_printf("Set interface %d successfully\n", intfCfgGet.intfEntry.index);
+    }
+
+    /* Set interface 5 */
+    CHK_FUN_RET(ret, drv_memset(&intfCfg, 0, sizeof(intfCfg)));
+    intfCfg.intfEntry.index      = 5u;
+    intfCfg.intfEntry.valid      = ENABLED;
+    intfCfg.intfEntry.intfFidVid = VLAN30;
+    intfCfg.intfEntry.portId     = DV1_RTK_USER_PORT_2ND;
+    intfCfg.intfEntry.ipVer      = IP6_VER;
+    intfCfg.intfEntry.gwIp[0]    = 0xFDu;
+    intfCfg.intfEntry.gwIp[1]    = 0x53u;
+    intfCfg.intfEntry.gwIp[2]    = 0x7Cu;
+    intfCfg.intfEntry.gwIp[3]    = 0xB8u;
+    intfCfg.intfEntry.gwIp[4]    = 0x03u;
+    intfCfg.intfEntry.gwIp[5]    = 0x83u;
+    intfCfg.intfEntry.gwIp[7]    = 0x03u;
+    intfCfg.intfEntry.gwIp[14]   = 0xFFu;
+    intfCfg.intfEntry.gwIp[15]   = 0xFEu;
+    intfCfg.intfEntry.mac[1]     = 0xe0u;
+    intfCfg.intfEntry.mac[2]     = 0x4cu;
+    intfCfg.intfEntry.mac[5]     = 0x01u;
+    CHK_FUN_RET(ret, rtk_route_intf_set(unitChip, &intfCfg));
+
+    /* Get interface 5 */
+    CHK_FUN_RET(ret, drv_memset(&intfCfgGet, 0, sizeof(intfCfgGet)));
+    intfCfgGet.intfEntry.index = intfCfg.intfEntry.index;
+    CHK_FUN_RET(ret, rtk_route_intf_get(unitChip, &intfCfgGet));
+
+    if(0 == rtl_memcmp(&intfCfgGet, &intfCfg, sizeof(intfCfg)))
+    {
+        (void)rtlglue_printf("Set interface %d successfully\n", intfCfgGet.intfEntry.index);
+    }
+
+    /* Lookup IPv6 unicast */
+    CHK_FUN_RET(ret, drv_memset(&searchInfo, 0, sizeof(searchInfo)));
+    searchInfo.luKey.dip[0]    = 0xFDu;
+    searchInfo.luKey.dip[1]    = 0x53u;
+    searchInfo.luKey.dip[2]    = 0x7Cu;
+    searchInfo.luKey.dip[3]    = 0xB8u;
+    searchInfo.luKey.dip[4]    = 0x03u;
+    searchInfo.luKey.dip[5]    = 0x83u;
+    searchInfo.luKey.dip[7]    = 0x02u;
+    searchInfo.luKey.dip[15]   = 0x02u;
+    searchInfo.luKey.entryType = EM_RT_UC6;
+    lukRet                     = rtk_route_tbl_lookup(unitChip, &searchInfo);
+
+    /* If lookup miss, then check available entry infomation */
+    if((-RT_ERR_ROUTE_ENTRY_NOT_FOUND == lukRet) && (RT_TBL_INVALID_IDX != searchInfo.availIdx))
+    {
+        /* The available entry is in host table, then set the unicast entry into the available entry */
+        if(EM_HOST_TBL == searchInfo.availTblType)
+        {
+            /* Set the unicast entry */
+            CHK_FUN_RET(ret, drv_memset(&ucEntry, 0, sizeof(ucEntry)));
+            CHK_FUN_RET(ret, drv_memcpy(&ucEntry.hostLuKey, &searchInfo.luKey, sizeof(RtlookUpKey_t)));
+            ucEntry.tblInfo.tblType  = searchInfo.availTblType;
+            ucEntry.tblInfo.index    = searchInfo.availIdx;
+            ucEntry.tblInfo.entryIdx = searchInfo.availEntryIdx;
+            ucEntry.valid            = ENABLED;
+            ucEntry.ttl              = ENABLED;
+            ucEntry.egrIfIdx         = 4u;
+            ucEntry.l2Idx            = lutSearchInfo.lutEntry.index;
+            CHK_FUN_RET(ret, rtk_route_uc_set(unitChip, &ucEntry));
+
+            /* Get the unicast entry */
+            CHK_FUN_RET(ret, drv_memset(&ucEntryGet, 0, sizeof(ucEntryGet)));
+            ucEntryGet.tblInfo.tblType     = ucEntry.tblInfo.tblType;
+            ucEntryGet.tblInfo.index       = ucEntry.tblInfo.index;
+            ucEntryGet.tblInfo.entryIdx    = ucEntry.tblInfo.entryIdx;
+            ucEntryGet.hostLuKey.entryType = ucEntry.hostLuKey.entryType;
+            CHK_FUN_RET(ret, rtk_route_uc_get(unitChip, &ucEntryGet));
+
+            if(0 == rtl_memcmp(&ucEntryGet, &ucEntry, sizeof(ucEntry)))
+            {
+                (void)rtlglue_printf("Set IPv6 unicast entry successfully\n");
+            }
+        }
+        else if(EM_NET_TBL == searchInfo.availTblType)
+        {
+            /* The available entry is in host table, then set the unicast entry into the available entry */
+            CHK_FUN_RET(ret, drv_memset(&ucEntry, 0, sizeof(ucEntry)));
+            CHK_FUN_RET(ret, drv_memcpy(&ucEntry.netLuKey, &searchInfo.luKey, sizeof(RtlookUpKey_t)));
+            CHK_FUN_RET(ret, drv_memset(ucEntry.netLuKey.dipCare, 0xff, IPV6_ADDR_LEN));
+            ucEntry.netLuKey.typeCare = ENABLED;
+            ucEntry.tblInfo.tblType   = searchInfo.availTblType;
+            ucEntry.tblInfo.index     = searchInfo.availIdx;
+            ucEntry.valid             = ENABLED;
+            ucEntry.ttl               = ENABLED;
+            ucEntry.egrIfIdx          = 4u;
+            ucEntry.l2Idx             = lutSearchInfo.lutEntry.index;
+            CHK_FUN_RET(ret, rtk_route_uc_set(unitChip, &ucEntry));
+
+            /* Get the unicast entry */
+            CHK_FUN_RET(ret, drv_memset(&ucEntryGet, 0, sizeof(ucEntryGet)));
+            ucEntryGet.tblInfo.tblType    = ucEntry.tblInfo.tblType;
+            ucEntryGet.tblInfo.index      = ucEntry.tblInfo.index;
+            ucEntryGet.tblInfo.entryIdx   = ucEntry.tblInfo.entryIdx;
+            ucEntryGet.netLuKey.entryType = ucEntry.netLuKey.entryType;
+            CHK_FUN_RET(ret, rtk_route_uc_get(unitChip, &ucEntryGet));
+
+            if(0 == rtl_memcmp(&ucEntryGet, &ucEntry, sizeof(ucEntry)))
+            {
+                (void)rtlglue_printf("Set IPv6 unicast entry successfully\n");
+            }
+        }
+        else
+        {
+            (void)rtlglue_printf("No available space to store the entry!!\n");
+        }
+    }
+
+    /* Lookup IPv6 multicast */
+    CHK_FUN_RET(ret, drv_memset(&searchInfo, 0, sizeof(searchInfo)));
+    searchInfo.luKey.dip[0]    = 0xFFu;
+    searchInfo.luKey.dip[1]    = 0x14u;
+    searchInfo.luKey.dip[15]   = 0x1u;
+    searchInfo.luKey.sip[0]    = 0xFDu;
+    searchInfo.luKey.sip[1]    = 0x53u;
+    searchInfo.luKey.sip[2]    = 0x7Cu;
+    searchInfo.luKey.sip[3]    = 0xB8u;
+    searchInfo.luKey.sip[4]    = 0x03u;
+    searchInfo.luKey.sip[5]    = 0x83u;
+    searchInfo.luKey.sip[7]    = 0x01u;
+    searchInfo.luKey.sip[15]   = 0x01u;
+    searchInfo.luKey.entryType = EM_RT_MC6;
+    lukRet                     = rtk_route_tbl_lookup(unitChip, &searchInfo);
+
+    /* If lookup miss, then check available entry infomation */
+    if((-RT_ERR_ROUTE_ENTRY_NOT_FOUND == lukRet) && (RT_TBL_INVALID_IDX != searchInfo.availIdx))
+    {
+        /* An available entry exists */
+        if((EM_HOST_TBL == searchInfo.availTblType) || (EM_MCCOL_TBL == searchInfo.availTblType))
+        {
+            /* Set the multicast entry */
+            CHK_FUN_RET(ret, drv_memset(&mcEntry, 0, sizeof(mcEntry)));
+            CHK_FUN_RET(ret, drv_memcpy(&mcEntry.luKey, &searchInfo.luKey, sizeof(RtlookUpKey_t)));
+            mcEntry.tblInfo.tblType  = searchInfo.availTblType;
+            mcEntry.tblInfo.index    = searchInfo.availIdx;
+            mcEntry.tblInfo.entryIdx = searchInfo.availEntryIdx;
+            mcEntry.valid            = ENABLED;
+            mcEntry.ttl              = ENABLED;
+            mcEntry.dpm              = DV1_RTK_USER_PMAP_2ND;
+            mcEntry.nextHopIf[0]     = 0x30u; /* set egress intetface ID - 4, 5 */
+            CHK_FUN_RET(ret, rtk_route_mc_set(unitChip, &mcEntry));
+
+            /* Get the multicast entry */
+            CHK_FUN_RET(ret, drv_memset(&mcEntryGet, 0, sizeof(mcEntryGet)));
+            mcEntryGet.tblInfo.tblType  = mcEntry.tblInfo.tblType;
+            mcEntryGet.tblInfo.index    = mcEntry.tblInfo.index;
+            mcEntryGet.tblInfo.entryIdx = mcEntry.tblInfo.entryIdx;
+            mcEntryGet.luKey.entryType  = mcEntry.luKey.entryType;
+            CHK_FUN_RET(ret, rtk_route_mc_get(unitChip, &mcEntryGet));
+
+            if(0 == rtl_memcmp(&mcEntryGet, &mcEntry, sizeof(mcEntry)))
+            {
+                (void)rtlglue_printf("Set IPv6 multicast entry successfully\n");
+            }
+        }
+        else
+        {
+            (void)rtlglue_printf("No available space to store the entry!!\n");
+        }
+    }
+
+    /* Enable Routing */
+    enable.enable = ENABLED;
+    CHK_FUN_RET(ret, rtk_route_enable(unitChip, &enable));
+
+    /* Diagnostic */
+    CHK_FUN_RET(ret, dv1_static_routing_table_dump());
+    /*
+    Expected Behaviour:
+    The IPv4 packet from 1st port with DIP-192.168.2.2 will be routed to interface 1
+    The IPv4 packet from 1st port with DIP-224.1.2.3 SIP-192.168.1.1 will be routed to interface 1, 2
+    The IPv6 packet from 1st port with DIP-FD53:7CB8:383:2::2 will be routed to interface 4
+    The IPv6 packet from 1st port with DIP-FF14::1 SIP-FD53:7CB8:383:1::1 will be routed to interface 4, 5
+    VID, SMAC, SIP will be replaced according to egress interface settings, and TTL will be checked and decreased.
+    Other L3 packets will be blocked
+    */
+    return ret;
+}
+
+static RtkApiRet dv1_static_routing_table_dump(void)
+{
+    RtkApiRet        ret           = RT_ERR_OK;
+    UnitChip_t       unitChip      = {DV1_UNIT, CHIP_907XD_V1};
+    RtIntfCfg_t      intfCfg       = {0};
+    RtUcEntry_t      ucEntry       = {0};
+    RtMcEntry_t      mcEntry       = {0};
+    RtHostTypeList_t entryTypeList = {0};
+    uint16           i             = 0;
+    uint8            j             = 0;
+
+    /* Dump interface table */
+    (void)rtlglue_printf("========== %s ==========\n", "Interface table");
+    for(i = 0u; i < RT_INTF_TBL_MAX_SIZE; i++)
+    {
+        CHK_FUN_CONTINUE(ret, drv_memset(&intfCfg, 0, sizeof(intfCfg)));
+        intfCfg.intfEntry.index = (uint8)i;
+        CHK_FUN_CONTINUE(ret, rtk_route_intf_get(unitChip, &intfCfg));
+
+        if(ENABLED == intfCfg.intfEntry.valid)
+        {
+            (void)rtlglue_printf("[%2d] Valid: %d Firewall: %d Filter: %d",
+                                 i, intfCfg.intfEntry.valid, intfCfg.intfEntry.firewall,
+                                 intfCfg.intfEntry.filter);
+
+            (void)rtlglue_printf(" IP ver: %d", intfCfg.intfEntry.ipVer);
+
+            if(IP4_VER == intfCfg.intfEntry.ipVer)
+            {
+                (void)rtlglue_printf(" IP: %3d.%3d.%3d.%3d", intfCfg.intfEntry.gwIp[0], intfCfg.intfEntry.gwIp[1], intfCfg.intfEntry.gwIp[2], intfCfg.intfEntry.gwIp[3]);
+            }
+            else
+            {
+                (void)rtlglue_printf(" IP: %02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x",
+                                     intfCfg.intfEntry.gwIp[0], intfCfg.intfEntry.gwIp[1], intfCfg.intfEntry.gwIp[2], intfCfg.intfEntry.gwIp[3],
+                                     intfCfg.intfEntry.gwIp[4], intfCfg.intfEntry.gwIp[5], intfCfg.intfEntry.gwIp[6], intfCfg.intfEntry.gwIp[7],
+                                     intfCfg.intfEntry.gwIp[8], intfCfg.intfEntry.gwIp[9], intfCfg.intfEntry.gwIp[10], intfCfg.intfEntry.gwIp[11],
+                                     intfCfg.intfEntry.gwIp[12], intfCfg.intfEntry.gwIp[13], intfCfg.intfEntry.gwIp[14], intfCfg.intfEntry.gwIp[15]);
+            }
+
+            (void)rtlglue_printf(" MAC: %02x:%02x:%02x:%02x:%02x:%02x VID: %d",
+                                 intfCfg.intfEntry.mac[0], intfCfg.intfEntry.mac[1], intfCfg.intfEntry.mac[2], intfCfg.intfEntry.mac[3], intfCfg.intfEntry.mac[4], intfCfg.intfEntry.mac[5], intfCfg.intfEntry.intfFidVid);
+
+            if(ENABLED == intfCfg.intfEntry.firewall)
+            {
+                (void)rtlglue_printf(" dpFmt: %d spFmt: %d [Lookup Key] DIP: %d SIP: %d DPort: %d SPort: %d VID: %d\n",
+                                     intfCfg.intfEntry.dpFmt, intfCfg.intfEntry.spFmt,
+                                     (ENABLED == intfCfg.luKeyMode.dipNoCare) ? DISABLED : ENABLED, (ENABLED == intfCfg.luKeyMode.sipNoCare) ? DISABLED : ENABLED,
+                                     (ENABLED == intfCfg.luKeyMode.dpNoCare) ? DISABLED : ENABLED, (ENABLED == intfCfg.luKeyMode.spNoCare) ? DISABLED : ENABLED,
+                                     (ENABLED == intfCfg.luKeyMode.vidNoCare) ? DISABLED : ENABLED);
+            }
+            else
+            {
+                (void)rtlglue_printf("\n");
+            }
+        }
+    }
+
+    /* Dump host table */
+    (void)rtlglue_printf("========== %s ==========\n", "Host table");
+    for(i = 0u; i < RT_HOST_TBL_MAX_SIZE; i++)
+    {
+        /* Get entry type info */
+        CHK_FUN_CONTINUE(ret, drv_memset(&entryTypeList, 0, sizeof(entryTypeList)));
+        entryTypeList.index = i;
+        ret                 = rtk_route_host_entry_typelist_get(unitChip, &entryTypeList);
+
+        /* Get entry index info */
+        for(j = 0u; j < RT_HOST_ENTRY_MAX_SIZE; j++)
+        {
+            if(ENABLED == entryTypeList.typeList[j].valid)
+            {
+                if(0u == ((uint8)entryTypeList.typeList[j].entryType & 1u)) /* Unicast : EM_RT_UC4(0), EM_RT_UC6(2), EM_RT_UC4FIR(4), EM_RT_UC6FIR(6) */
+                {
+                    CHK_FUN_CONTINUE(ret, drv_memset(&ucEntry, 0, sizeof(ucEntry)));
+                    ucEntry.tblInfo.tblType     = EM_HOST_TBL;
+                    ucEntry.tblInfo.index       = i;
+                    ucEntry.tblInfo.entryIdx    = entryTypeList.typeList[j].entryIdx;
+                    ucEntry.hostLuKey.entryType = entryTypeList.typeList[j].entryType;
+                    CHK_FUN_CONTINUE(ret, rtk_route_uc_get(unitChip, &ucEntry));
+
+                    (void)rtlglue_printf("[%4d] Valid: %d TTL: %d Type: %d", i, ucEntry.valid, ucEntry.ttl, ucEntry.hostLuKey.entryType);
+
+                    if(0u == (IP6_TYPE_BIT & (uint8)ucEntry.hostLuKey.entryType))
+                    {
+                        (void)rtlglue_printf(" DIP: %3d.%3d.%3d.%3d SIP: %3d.%3d.%3d.%3d",
+                                             ucEntry.hostLuKey.dipAddr[0], ucEntry.hostLuKey.dipAddr[1], ucEntry.hostLuKey.dipAddr[2], ucEntry.hostLuKey.dipAddr[3],
+                                             ucEntry.hostLuKey.sipAddr[0], ucEntry.hostLuKey.sipAddr[1], ucEntry.hostLuKey.sipAddr[2], ucEntry.hostLuKey.sipAddr[3]);
+                    }
+                    else
+                    {
+                        (void)rtlglue_printf(" DIP: %02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x SIP: %02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x",
+                                             ucEntry.hostLuKey.dipAddr[0], ucEntry.hostLuKey.dipAddr[1], ucEntry.hostLuKey.dipAddr[2], ucEntry.hostLuKey.dipAddr[3],
+                                             ucEntry.hostLuKey.dipAddr[4], ucEntry.hostLuKey.dipAddr[5], ucEntry.hostLuKey.dipAddr[6], ucEntry.hostLuKey.dipAddr[7],
+                                             ucEntry.hostLuKey.dipAddr[8], ucEntry.hostLuKey.dipAddr[9], ucEntry.hostLuKey.dipAddr[10], ucEntry.hostLuKey.dipAddr[11],
+                                             ucEntry.hostLuKey.dipAddr[12], ucEntry.hostLuKey.dipAddr[13], ucEntry.hostLuKey.dipAddr[14], ucEntry.hostLuKey.dipAddr[15],
+                                             ucEntry.hostLuKey.sipAddr[0], ucEntry.hostLuKey.sipAddr[1], ucEntry.hostLuKey.sipAddr[2], ucEntry.hostLuKey.sipAddr[3],
+                                             ucEntry.hostLuKey.sipAddr[4], ucEntry.hostLuKey.sipAddr[5], ucEntry.hostLuKey.sipAddr[6], ucEntry.hostLuKey.sipAddr[7],
+                                             ucEntry.hostLuKey.sipAddr[8], ucEntry.hostLuKey.sipAddr[9], ucEntry.hostLuKey.sipAddr[10], ucEntry.hostLuKey.sipAddr[11],
+                                             ucEntry.hostLuKey.sipAddr[12], ucEntry.hostLuKey.sipAddr[13], ucEntry.hostLuKey.sipAddr[14], ucEntry.hostLuKey.sipAddr[15]);
+                    }
+                    (void)rtlglue_printf(" DP: %5d SP: %5d VID: %d NhAlloc:%d NhIdx:%4d L2Idx: %4d EGRIF: %d\n",
+                                         ucEntry.hostLuKey.dp, ucEntry.hostLuKey.sp, ucEntry.hostLuKey.vid,
+                                         ucEntry.nhAlloc, ucEntry.nhIdx, ucEntry.l2Idx, ucEntry.egrIfIdx);
+                }
+                else /* Multicast */
+                {
+                    CHK_FUN_CONTINUE(ret, drv_memset(&mcEntry, 0, sizeof(mcEntry)));
+                    mcEntry.tblInfo.tblType  = EM_HOST_TBL;
+                    mcEntry.tblInfo.index    = i;
+                    mcEntry.tblInfo.entryIdx = entryTypeList.typeList[j].entryIdx;
+                    mcEntry.luKey.entryType  = entryTypeList.typeList[j].entryType;
+                    CHK_FUN_CONTINUE(ret, rtk_route_mc_get(unitChip, &mcEntry));
+
+                    (void)rtlglue_printf("[%4d] Valid: %d TTL: %d Type: %d",
+                                         i, mcEntry.valid, mcEntry.ttl, mcEntry.luKey.entryType);
+
+                    if(0u == (IP6_TYPE_BIT & (uint8)mcEntry.luKey.entryType))
+                    {
+                        (void)rtlglue_printf(" DIP: %3d.%3d.%3d.%3d SIP: %3d.%3d.%3d.%3d",
+                                             mcEntry.luKey.dipAddr[0], mcEntry.luKey.dipAddr[1], mcEntry.luKey.dipAddr[2], mcEntry.luKey.dipAddr[3], mcEntry.luKey.sipAddr[0], mcEntry.luKey.sipAddr[1], mcEntry.luKey.sipAddr[2], mcEntry.luKey.sipAddr[3]);
+                    }
+                    else
+                    {
+                        (void)rtlglue_printf(" DIP: %02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x SIP: %02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x",
+                                             mcEntry.luKey.dipAddr[0], mcEntry.luKey.dipAddr[1], mcEntry.luKey.dipAddr[2], mcEntry.luKey.dipAddr[3],
+                                             mcEntry.luKey.dipAddr[4], mcEntry.luKey.dipAddr[5], mcEntry.luKey.dipAddr[6], mcEntry.luKey.dipAddr[7],
+                                             mcEntry.luKey.dipAddr[8], mcEntry.luKey.dipAddr[9], mcEntry.luKey.dipAddr[10], mcEntry.luKey.dipAddr[11],
+                                             mcEntry.luKey.dipAddr[12], mcEntry.luKey.dipAddr[13], mcEntry.luKey.dipAddr[14], mcEntry.luKey.dipAddr[15],
+                                             mcEntry.luKey.sipAddr[0], mcEntry.luKey.sipAddr[1], mcEntry.luKey.sipAddr[2], mcEntry.luKey.sipAddr[3],
+                                             mcEntry.luKey.sipAddr[4], mcEntry.luKey.sipAddr[5], mcEntry.luKey.sipAddr[6], mcEntry.luKey.sipAddr[7],
+                                             mcEntry.luKey.sipAddr[8], mcEntry.luKey.sipAddr[9], mcEntry.luKey.sipAddr[10], mcEntry.luKey.sipAddr[11],
+                                             mcEntry.luKey.sipAddr[12], mcEntry.luKey.sipAddr[13], mcEntry.luKey.sipAddr[14], mcEntry.luKey.sipAddr[15]);
+                    }
+                    (void)rtlglue_printf(" DP: %5d SP: %5d VID: %d RHALLOC: %d RHIDX: %4d DPM: 0x%0x EGRIFLIST: 0x%02x%02x%02x%02x%02x%02x%02x%02x\n",
+                                         mcEntry.luKey.dp, mcEntry.luKey.sp, mcEntry.luKey.vid, mcEntry.rhAlloc, mcEntry.rhTblIdx, mcEntry.dpm,
+                                         mcEntry.nextHopIf[7], mcEntry.nextHopIf[6], mcEntry.nextHopIf[5], mcEntry.nextHopIf[4],
+                                         mcEntry.nextHopIf[3], mcEntry.nextHopIf[2], mcEntry.nextHopIf[1], mcEntry.nextHopIf[0]);
+                }
+            }
+
+            if(RT_ERR_OK != ret)
+            {
+                break;
+            }
+        }
+
+        if(RT_ERR_OK != ret)
+        {
+            break;
+        }
+    }
+
+    /* Dump net table */
+    (void)rtlglue_printf("========== %s ==========\n", "Network table");
+    for(i = 0u; i < RT_NET_TBL_MAX_SIZE; i++)
+    {
+        CHK_FUN_CONTINUE(ret, drv_memset(&ucEntry, 0, sizeof(ucEntry)));
+        ucEntry.tblInfo.tblType = EM_NET_TBL;
+        ucEntry.tblInfo.index   = i;
+        CHK_FUN_CONTINUE(ret, rtk_route_uc_get(unitChip, &ucEntry));
+
+        if(ENABLED == ucEntry.valid)
+        {
+            (void)rtlglue_printf("[%3d] Valid: %d TTL: %d NhAlloc:%d NhIdx:%4d L2Idx: %4d EGRIF: %d",
+                                 i, ucEntry.valid, ucEntry.ttl, ucEntry.nhAlloc, ucEntry.nhIdx, ucEntry.l2Idx, ucEntry.egrIfIdx);
+
+            (void)rtlglue_printf(" Type: %d", ucEntry.netLuKey.entryType);
+
+            if(0u == (IP6_TYPE_BIT & (uint8)ucEntry.netLuKey.entryType))
+            {
+                (void)rtlglue_printf(" DIP: %3d.%3d.%3d.%3d SIP: %3d.%3d.%3d.%3d",
+                                     ucEntry.netLuKey.dipAddr[0], ucEntry.netLuKey.dipAddr[1], ucEntry.netLuKey.dipAddr[2], ucEntry.netLuKey.dipAddr[3],
+                                     ucEntry.netLuKey.sipAddr[0], ucEntry.netLuKey.sipAddr[1], ucEntry.netLuKey.sipAddr[2], ucEntry.netLuKey.sipAddr[3]);
+            }
+            else
+            {
+                (void)rtlglue_printf(" DIP: %02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x SIP: %02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x",
+                                     ucEntry.netLuKey.dipAddr[0], ucEntry.netLuKey.dipAddr[1], ucEntry.netLuKey.dipAddr[2], ucEntry.netLuKey.dipAddr[3],
+                                     ucEntry.netLuKey.dipAddr[4], ucEntry.netLuKey.dipAddr[5], ucEntry.netLuKey.dipAddr[6], ucEntry.netLuKey.dipAddr[7],
+                                     ucEntry.netLuKey.dipAddr[8], ucEntry.netLuKey.dipAddr[9], ucEntry.netLuKey.dipAddr[10], ucEntry.netLuKey.dipAddr[11],
+                                     ucEntry.netLuKey.dipAddr[12], ucEntry.netLuKey.dipAddr[13], ucEntry.netLuKey.dipAddr[14], ucEntry.netLuKey.dipAddr[15],
+                                     ucEntry.netLuKey.sipAddr[0], ucEntry.netLuKey.sipAddr[1], ucEntry.netLuKey.sipAddr[2], ucEntry.netLuKey.sipAddr[3],
+                                     ucEntry.netLuKey.sipAddr[4], ucEntry.netLuKey.sipAddr[5], ucEntry.netLuKey.sipAddr[6], ucEntry.netLuKey.sipAddr[7],
+                                     ucEntry.netLuKey.sipAddr[8], ucEntry.netLuKey.sipAddr[9], ucEntry.netLuKey.sipAddr[10], ucEntry.netLuKey.sipAddr[11],
+                                     ucEntry.netLuKey.sipAddr[12], ucEntry.netLuKey.sipAddr[13], ucEntry.netLuKey.sipAddr[14], ucEntry.netLuKey.sipAddr[15]);
+            }
+            (void)rtlglue_printf(" DP: %5d SP: %5d VID: %d\n", ucEntry.netLuKey.dp, ucEntry.netLuKey.sp, ucEntry.netLuKey.vid);
+        }
+    }
+
+    /* Dump multicast collision table */
+    (void)rtlglue_printf("========== %s ==========\n", "Multicast collision table");
+    for(i = 0u; i < RT_MCCOL_TBL_MAX_SIZE; i++)
+    {
+        CHK_FUN_CONTINUE(ret, drv_memset(&mcEntry, 0, sizeof(mcEntry)));
+        mcEntry.tblInfo.tblType = EM_MCCOL_TBL;
+        mcEntry.tblInfo.index   = i;
+        CHK_FUN_CONTINUE(ret, rtk_route_mc_get(unitChip, &mcEntry));
+
+        if(ENABLED == mcEntry.valid)
+        {
+            (void)rtlglue_printf("[%2d] Valid: %d TTL: %d", i, mcEntry.valid, mcEntry.ttl);
+
+            (void)rtlglue_printf(" Type: %d", mcEntry.luKey.entryType);
+
+            if(0u == (IP6_TYPE_BIT & (uint8)mcEntry.luKey.entryType))
+            {
+                (void)rtlglue_printf(" DIP: %3d.%3d.%3d.%3d SIP: %3d.%3d.%3d.%3d",
+                                     mcEntry.luKey.dipAddr[0], mcEntry.luKey.dipAddr[1], mcEntry.luKey.dipAddr[2], mcEntry.luKey.dipAddr[3],
+                                     mcEntry.luKey.sipAddr[0], mcEntry.luKey.sipAddr[1], mcEntry.luKey.sipAddr[2], mcEntry.luKey.sipAddr[3]);
+            }
+            else
+            {
+                (void)rtlglue_printf(" DIP: %02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x SIP: %02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x",
+                                     mcEntry.luKey.dipAddr[0], mcEntry.luKey.dipAddr[1], mcEntry.luKey.dipAddr[2], mcEntry.luKey.dipAddr[3],
+                                     mcEntry.luKey.dipAddr[4], mcEntry.luKey.dipAddr[5], mcEntry.luKey.dipAddr[6], mcEntry.luKey.dipAddr[7],
+                                     mcEntry.luKey.dipAddr[8], mcEntry.luKey.dipAddr[9], mcEntry.luKey.dipAddr[10], mcEntry.luKey.dipAddr[11],
+                                     mcEntry.luKey.dipAddr[12], mcEntry.luKey.dipAddr[13], mcEntry.luKey.dipAddr[14], mcEntry.luKey.dipAddr[15],
+                                     mcEntry.luKey.sipAddr[0], mcEntry.luKey.sipAddr[1], mcEntry.luKey.sipAddr[2], mcEntry.luKey.sipAddr[3],
+                                     mcEntry.luKey.sipAddr[4], mcEntry.luKey.sipAddr[5], mcEntry.luKey.sipAddr[6], mcEntry.luKey.sipAddr[7],
+                                     mcEntry.luKey.sipAddr[8], mcEntry.luKey.sipAddr[9], mcEntry.luKey.sipAddr[10], mcEntry.luKey.sipAddr[11],
+                                     mcEntry.luKey.sipAddr[12], mcEntry.luKey.sipAddr[13], mcEntry.luKey.sipAddr[14], mcEntry.luKey.sipAddr[15]);
+            }
+            (void)rtlglue_printf(" DP: %5d SP: %5d VID: %d RHALLOC: %d RHIDX: %4d DPM: 0x%0x EGRIFLIST: 0x%02x%02x%02x%02x%02x%02x%02x%02x\n",
+                                 mcEntry.luKey.dp, mcEntry.luKey.sp, mcEntry.luKey.vid, mcEntry.rhAlloc, mcEntry.rhTblIdx, mcEntry.dpm,
+                                 mcEntry.nextHopIf[7], mcEntry.nextHopIf[6], mcEntry.nextHopIf[5], mcEntry.nextHopIf[4],
+                                 mcEntry.nextHopIf[3], mcEntry.nextHopIf[2], mcEntry.nextHopIf[1], mcEntry.nextHopIf[0]);
+        }
+    }
+
+    /*
+    Expected Behaviour:
+        Dump all table info
+    */
+    return ret;
+}
+/**@}*/ /* DV1_RT_EXAMPLE_STATIC */
+/**@}*/ /* DV1_RT_EXAMPLE_RT */
+/**@}*/ /* DV1_RT_EXAMPLE */
+/**@}*/ /* RT_EXAMPLE */
+/**@}*/ /* EXAMPLE */

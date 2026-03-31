@@ -1,0 +1,19 @@
+{
+        "class_switch":{
+                "device_switch0":{
+                        "compatible":"libbsp,rtl9071",
+			"unit":1
+                },
+                "device_switch1":{
+                        "compatible":"libbsp,mtk7531"
+                }
+        },
+        "class_phy":{
+                "device_phy0":{
+                        "compatible":"libbsp,rtl9071"
+                },
+		"device_phy1":{
+                        "compatible":"libbsp,mtk7531"
+                }
+        }
+}

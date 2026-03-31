@@ -1,0 +1,7 @@
+config KSOURCE_SWITCH_RTL7071
+    bool "kdriver rtl9071"
+    depends on KSOURCE_SWITCH
+    default n
+    help
+        kdriver rtl9071
+

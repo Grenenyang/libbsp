@@ -1,0 +1,239 @@
+
+########## Source file ##########
+ifneq (,$(findstring RTK_MODULE_TBL_ACCESS, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_asicdrv_lut.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_L2, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_l2.c
+    SRCS += rtkas_api_l2.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_PTP, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_asicdrv_ptp.c
+    SRCS += rtl907xd_v1_api_ptp.c
+    SRCS += rtkas_api_ptp.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_VLAN, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_asicdrv_svlan.c
+    SRCS += rtl907xd_v1_asicdrv_vlan.c
+    SRCS += rtl907xd_v1_api_vlan.c
+    SRCS += rtkas_api_vlan.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_STACKING, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_asicdrv_stacking.c
+    SRCS += rtl907xd_v1_api_stacking.c
+    SRCS += rtkas_api_stacking.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_ROUTING, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_asicdrv_routing.c
+    SRCS += rtl907xd_v1_api_routing.c
+    SRCS += rtkas_api_routing.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_TSN, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_asicdrv_tsn_common.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_ACL, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_acl.c
+    SRCS += rtl907xd_v1_asicdrv_acl.c
+    SRCS += rtkas_api_acl.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_OPFSM, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_opfsm.c
+    SRCS += rtl907xd_v1_asicdrv_opfsm.c
+    SRCS += rtkas_api_opfsm.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_ETHERNET_ACCESS, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_ethernet_access.c
+    SRCS += rtl907xd_v1_asicdrv_ethernet_access.c
+    SRCS += rtkas_api_ethernet_access.c
+
+endif
+
+ifneq (,$(findstring RTK_MODULE_PORT_MIRROR, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_mirror.c
+    SRCS += rtl907xd_v1_asicdrv_mirror.c
+    SRCS += rtkas_api_mirror.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_STP, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_stp.c
+    SRCS += rtkas_api_stp.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_SINGLE_LOOP, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_asicdrv_single_loop.c
+    SRCS += rtl907xd_v1_api_single_loop.c
+    SRCS += rtkas_api_single_loop.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_QOS, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_asicdrv_qos.c
+    SRCS += rtl907xd_v1_api_qos.c
+    SRCS += rtkas_api_qos.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_QAV, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_qav.c
+    SRCS += rtkas_api_qav.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_PCIE, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_pcie.c
+    SRCS += rtl907xd_v1_asicdrv_pcie.c
+    SRCS += rtkas_api_pcie.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_PORT_ISOLATION, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_port_isolation.c
+    SRCS += rtkas_api_port_isolation.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_STORM_CTRL, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_storm_ctl.c
+    SRCS += rtl907xd_v1_asicdrv_storm_ctl.c
+    SRCS += rtkas_api_storm_ctl.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_LINK_AGGREGATION, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_link_aggregation.c
+    SRCS += rtkas_api_link_aggregation.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_MIB, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_asicdrv_mib.c
+    SRCS += rtl907xd_v1_api_mib.c
+    SRCS += rtkas_api_mib.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_INTERFACE, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_asicdrv_port.c
+    SRCS += rtl907xd_v1_api_interface.c
+    SRCS += rtkas_api_interface.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_SMI_MASTER, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_asicdrv_smi.c
+    SRCS += rtl907xd_v1_api_smi.c
+    SRCS += rtkas_api_smi.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_SPI_FLASH, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_asicdrv_flash.c
+    SRCS += rtl907xd_v1_api_spi_flash.c
+    SRCS += rtkas_api_spi_flash.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_SYSTEM, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_system.c
+    SRCS += rtl907xd_v1_asicdrv.c
+    SRCS += rtl907xd_v1_asicdrv_mem_ctrl.c
+    SRCS += rtkas_api_system.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_PHY_PORT, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_phy.c
+    SRCS += rtl907xd_v1_asicdrv_phy.c
+    SRCS += rtkas_api_phy.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_PHY_TEST_MODE, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_phy_test.c
+    SRCS += rtkas_api_phy_test.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_FLOWCTRL, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_asicdrv_flow_ctrl.c
+    SRCS += rtl907xd_v1_api_flow_ctrl.c
+    SRCS += rtkas_api_flow_ctrl.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_IGMP, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_igmp.c
+    SRCS += rtkas_api_igmp.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_OTP, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_asicdrv_otp.c
+    SRCS += rtl907xd_v1_api_otp.c
+    SRCS += rtkas_api_otp.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_SYS_BOOT, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_sys_boot.c
+    SRCS += rtkas_api_sys_boot.c 
+    SRCS += rtl907xd_v1_asicdrv_config.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_SERDES, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_serdes.c
+    SRCS += rtl907xd_v1_asicdrv_serdes.c
+    SRCS += rtkas_api_serdes.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_MACPHY, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_macphy.c
+    SRCS += rtkas_api_macphy.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_MACSEC, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_mka.c
+    SRCS += rtl907xd_v1_api_macsec.c
+    SRCS += rtl907xd_v1_asicdrv_mka.c
+    SRCS += rtl907xd_v1_asicdrv_macsec.c
+    SRCS += rtkas_api_mka.c
+    SRCS += rtkas_api_macsec.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_RESET, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_asicdrv_reset.c
+    SRCS += rtl907xd_v1_api_reset.c
+    SRCS += rtkas_api_reset.c
+endif
+
+ifneq (,$(findstring RTK_MODULE_LED, $(CFLAGS)))
+## Include file
+    SRCS += rtl907xd_v1_api_led.c
+    SRCS += rtkas_api_led.c
+endif
